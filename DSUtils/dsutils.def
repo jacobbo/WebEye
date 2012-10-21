@@ -1,0 +1,12 @@
+LIBRARY	"dsutils"
+
+EXPORTS EnumVideoInputDevices
+        BuildCaptureGraph
+        AddRenderFilter
+        AddCaptureFilter
+        Start
+        GetCurrentImage
+        GetVideoSize
+        Stop
+        ResetCaptureGraph
+        DestroyCaptureGraph
