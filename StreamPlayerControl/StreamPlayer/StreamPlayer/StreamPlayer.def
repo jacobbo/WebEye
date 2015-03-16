@@ -1,0 +1,9 @@
+LIBRARY	"StreamPlayer"
+
+EXPORTS Initialize
+        Open
+        Play
+		GetCurrentFrame
+		GetFrameSize
+        Stop
+        Uninitialize 
