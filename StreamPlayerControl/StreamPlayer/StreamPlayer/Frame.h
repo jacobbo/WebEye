@@ -14,21 +14,21 @@ namespace FFmpeg
 #pragma warning( push )
 #pragma warning( disable : 4244 )
 
-	extern "C"
-	{
+    extern "C"
+    {
 #include <libavcodec/avcodec.h>
-	}
+    }
 
 #pragma warning( pop )
 
-	namespace Facade
-	{
+    namespace Facade
+    {
         /// <summary>
         /// A Frame class implements a set of frame-related utilities. 
         /// </summary>
-		class Frame : private boost::noncopyable
-		{
-		public:
+        class Frame : private boost::noncopyable
+        {
+        public:
             /// <summary>
             /// Initializes a new instance of the Frame class.
             /// </summary>
@@ -37,12 +37,12 @@ namespace FFmpeg
             /// <summary>
             /// Gets the width, in pixels, of the frame.
             /// </summary>
-			uint32_t Width() const { return width_; }
+            uint32_t Width() const { return width_; }
 
             /// <summary>
             /// Gets the height, in pixels, of the frame.
             /// </summary>
-			uint32_t Height() const { return height_; }
+            uint32_t Height() const { return height_; }
 
             /// <summary>
             /// Updates the frame.
@@ -54,21 +54,23 @@ namespace FFmpeg
             /// Draws the frame.
             /// </summary>
             /// <param name="window">A container window that frame should be drawn on.</param>
-			void Draw(HWND window);
+            void Draw(HWND window);
 
             /// <summary>
             /// Converts the frame to a bitmap.
             /// </summary>
             /// <param name="bmpPtr">Address of a pointer to a byte that will receive the DIB.</param>
-			void ToBmp(uint8_t **bmpPtr);
+            void ToBmp(uint8_t **bmpPtr);
 
             /// <summary>
             /// Releases all resources used by the frame.
             /// </summary>
-			~Frame();
+            ~Frame()
+            {
+                delete[] pixelsPtr_;
+            }
 
-		private:
-                        
+        private:
             /// <summary>
             /// The bits in the array are packed together, but each scan line must be
             /// padded with zeros to end on a LONG data-type boundary.
@@ -79,11 +81,11 @@ namespace FFmpeg
                     sizeof(uint32_t) - (lineSize % sizeof(uint32_t)) : 0;
             }
 
-			int32_t width_, height_;
-			uint8_t *pixelsPtr_;
-			boost::mutex mutex_;
-		};
-	}
+            int32_t width_, height_;
+            uint8_t *pixelsPtr_;
+            boost::mutex mutex_;
+        };
+    }
 }
 
 #endif // FFMPEG_FACADE_FRAME_H

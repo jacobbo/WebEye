@@ -105,6 +105,10 @@
     <ClInclude Include="Frame.h" />
     <ClInclude Include="StreamPlayer.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="LGPLv3.txt" />
+    <Text Include="license.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

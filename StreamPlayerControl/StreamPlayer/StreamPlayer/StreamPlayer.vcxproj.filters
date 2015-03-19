@@ -38,4 +38,8 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="license.txt" />
+    <Text Include="LGPLv3.txt" />
+  </ItemGroup>
 </Project>
