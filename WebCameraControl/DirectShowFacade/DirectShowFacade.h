@@ -20,17 +20,13 @@ the EnumVideoInputDevices function.
 Copyright (C) 2012 Alexander Iacobciuc (a.iacobciuc@gmail.com)
 ******************************************************************************/
 
-#ifndef DSUTILS_H
-#define DSUTILS_H
+#ifndef DIRECTSHOWFACADE_H
+#define DIRECTSHOWFACADE_H
 
 #define WIN32_LEAN_AND_MEAN
 #define STRICT
 #include <windows.h>
 #include <WTypes.h>
-
-#ifndef DSUTILS_API
-#define DSUTILS_API extern "C" __declspec(dllimport)
-#endif
 
 struct VideoInputDeviceInfo;
 typedef void (__stdcall *EnumVideoInputDevicesCallback)(const VideoInputDeviceInfo *pInfo);
@@ -39,53 +35,53 @@ typedef void (__stdcall *EnumVideoInputDevicesCallback)(const VideoInputDeviceIn
 /// Enumerates video input devices in a system.
 /// </summary>
 /// <param name="callback">A callback method.</param>
-DSUTILS_API void __stdcall EnumVideoInputDevices(EnumVideoInputDevicesCallback callback);
+void __stdcall EnumVideoInputDevices(EnumVideoInputDevicesCallback callback);
 
 /// <summary>
 /// Builds a video capture graph.
 /// </summary>
 /// <returns>If the function succeeds, the return value is zero.</returns>
-DSUTILS_API int __stdcall BuildCaptureGraph();
+int __stdcall BuildCaptureGraph();
 
 /// <summary>
 /// Adds a renderer filter to a video capture graph, which renders a video stream within a container window.
 /// </summary>
 /// <param name="hWnd">A container window that video should be clipped to.</param>
 /// <returns>If the function succeeds, the return value is zero.</returns>
-DSUTILS_API int __stdcall AddRenderFilter(HWND hWnd);
+int __stdcall AddRenderFilter(HWND hWnd);
 
 /// <summary>
 /// Adds a video stream source to a video capture graph.
 /// </summary>
 /// <param name="devicePath">A device path of a video capture filter to add.</param>
 /// <returns>If the function succeeds, the return value is zero.</returns>
-DSUTILS_API int __stdcall AddCaptureFilter(BSTR devicePath);
+int __stdcall AddCaptureFilter(BSTR devicePath);
 
 /// <summary>
 /// Removes a video stream source from a video capture graph.
 /// </summary>
 /// <returns>If the function succeeds, the return value is zero.</returns>
-DSUTILS_API int __stdcall ResetCaptureGraph();
+int __stdcall ResetCaptureGraph();
 
 /// <summary>
 /// Runs all the filters in a video capture graph. While the graph is running,
 /// data moves through the graph and is rendered. 
 /// </summary>
 /// <returns>If the function succeeds, the return value is zero.</returns>
-DSUTILS_API int __stdcall Start();
+int __stdcall Start();
 
 /// <summary>
 /// Stops all the filters in a video capture graph.
 /// </summary>
 /// <returns>If the function succeeds, the return value is zero.</returns>
-DSUTILS_API int __stdcall Stop();
+int __stdcall Stop();
 
 /// <summary>
 /// Retrieves the current image being displayed by the renderer filter.
 /// </summary>
 /// <param name="ppDib">Address of a pointer to a BYTE that will receive the DIB.</param>
 /// <returns>If the function succeeds, the return value is zero.</returns>
-DSUTILS_API int __stdcall GetCurrentImage(BYTE **ppDib);
+int __stdcall GetCurrentImage(BYTE **ppDib);
 
 /// <summary>
 /// Retrieves the unstretched video size.
@@ -93,11 +89,11 @@ DSUTILS_API int __stdcall GetCurrentImage(BYTE **ppDib);
 /// <param name="lpWidth">A pointer to a LONG that will receive the width.</param>
 /// <param name="lpHeight">A pointer to a LONG that will receive the height.</param>
 /// <returns>If the function succeeds, the return value is zero.</returns>
-DSUTILS_API int __stdcall GetVideoSize(LONG *lpWidth, LONG *lpHeight);
+int __stdcall GetVideoSize(LONG *lpWidth, LONG *lpHeight);
 
 /// <summary>
 /// Destroys a video capture graph.
 /// </summary>
-DSUTILS_API void __stdcall DestroyCaptureGraph();
+void __stdcall DestroyCaptureGraph();
 
-#endif
+#endif // DIRECTSHOWFACADE_H

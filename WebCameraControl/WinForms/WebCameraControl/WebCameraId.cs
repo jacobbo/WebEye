@@ -7,7 +7,7 @@ namespace WebEye
         /// <summary>
         /// Initializes a new instance of the WebCameraId class.
         /// </summary>
-        internal WebCameraId(DirectShowUtilities.VideoInputDeviceInfo info)
+        internal WebCameraId(DirectShowFacade.VideoInputDeviceInfo info)
         {
             _name = info.FriendlyName;
             _devicePath = info.DevicePath;

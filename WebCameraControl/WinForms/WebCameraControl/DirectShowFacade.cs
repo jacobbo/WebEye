@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using WebEye.Properties;
 
@@ -17,7 +16,7 @@ namespace WebEye
         }
     }
 
-    internal sealed class DirectShowUtilities : CriticalFinalizerObject, IDisposable
+    internal sealed class DirectShowFacade : IDisposable
     {
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         internal struct VideoInputDeviceInfo
@@ -63,6 +62,11 @@ namespace WebEye
         private String _dllFile = string.Empty;
         private IntPtr _hDll = IntPtr.Zero;
 
+        private Boolean IsX86Platform
+        {
+            get { return IntPtr.Size == 4; }
+        }
+
         [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr LoadLibrary(String lpFileName);
 
@@ -73,11 +77,12 @@ namespace WebEye
         private void LoadDll()
         {
             _dllFile = Path.GetTempFileName();
-            using (var stream = new FileStream(_dllFile, FileMode.Create, FileAccess.Write))
+            using (FileStream stream = new FileStream(_dllFile, FileMode.Create, FileAccess.Write))
             {
-                using (var writer = new BinaryWriter(stream))
+                using (BinaryWriter writer = new BinaryWriter(stream))
                 {
-                    writer.Write(Resources.DSUtilsDLL);
+                    writer.Write(IsX86Platform ?
+                        Resources.DirectShowFacade : Resources.DirectShowFacade64);
                 }
             }
 
@@ -137,10 +142,10 @@ namespace WebEye
         }
 
         /// <summary>
-        /// Initializes a new instance of the DirectShowUtilities class.
+        /// Initializes a new instance of the DirectShowFacade class.
         /// </summary>
         /// <exception cref="Win32Exception">Failed to load the utilities dll.</exception>
-        internal DirectShowUtilities()
+        internal DirectShowFacade()
         {
             LoadDll();
             BindToDll(_hDll);
@@ -311,34 +316,18 @@ namespace WebEye
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern Boolean FreeLibrary(IntPtr hModule);
 
-        private void Dispose(Boolean disposing)
-        {
-            // If you need thread safety, use a lock around these 
-            // operations, as well as in your methods that use the resource.
-            if (disposing)
-            {
-                if (_hDll != IntPtr.Zero)
-                {
-                    FreeLibrary(_hDll);
-                }
-
-                if (File.Exists(_dllFile))
-                {
-                    File.Delete(_dllFile);
-                }
-            }
-        }
-
         public void Dispose()
         {
-            Dispose(true);
+            if (_hDll != IntPtr.Zero)
+            {
+                FreeLibrary(_hDll);
+                _hDll = IntPtr.Zero;
+            }
 
-            GC.SuppressFinalize(this);
-        }
-
-        ~DirectShowUtilities()
-        {
-            Dispose(false);
+            if (File.Exists(_dllFile))
+            {
+                File.Delete(_dllFile);
+            }
         }
     }
 }

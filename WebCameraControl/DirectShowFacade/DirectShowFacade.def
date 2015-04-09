@@ -1,4 +1,4 @@
-LIBRARY	"dsutils"
+LIBRARY	"DirectShowFacade"
 
 EXPORTS EnumVideoInputDevices
         BuildCaptureGraph

@@ -28,10 +28,14 @@ void StreamPlayer::Open(string const& url)
 
     stopRequested_ = false;
 
-    av_register_all();
-    avdevice_register_all();
-    avcodec_register_all();
-    avformat_network_init();
+    static boost::once_flag flag = BOOST_ONCE_INIT;
+    boost::call_once(flag, []()
+    {
+        av_register_all();
+        avdevice_register_all();
+        avcodec_register_all();
+        avformat_network_init();
+    });
 
     AVDictionary *streamOpts = nullptr;
     av_dict_set(&streamOpts, "stimeout", "5000000", 0); // 5 seconds timeout.
@@ -157,6 +161,7 @@ void StreamPlayer::Render()
     av_free_packet(&packet);
     avcodec_close(codecCtxPtr_);
     avformat_close_input(&formatCtxPtr_);
+    avformat_free_context(formatCtxPtr_);
 }
 
 void StreamPlayer::Stop()

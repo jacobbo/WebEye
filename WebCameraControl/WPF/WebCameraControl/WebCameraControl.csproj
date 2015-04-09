@@ -51,7 +51,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="DirectShowUtilities.cs" />
+    <Compile Include="DirectShowFacade.cs" />
     <Compile Include="VideoWindow.cs" />
     <Compile Include="WebCameraControl.xaml.cs">
       <DependentUpon>WebCameraControl.xaml</DependentUpon>
@@ -83,7 +83,10 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\dsutils.dll" />
+    <None Include="Resources\DirectShowFacade64.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DirectShowFacade.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

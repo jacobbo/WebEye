@@ -38,7 +38,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DirectShowUtilities.cs" />
+    <Compile Include="DirectShowFacade.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -60,8 +60,12 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <None Include="Resources\dsutils.dll" />
+    <None Include="Resources\DirectShowFacade64.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DirectShowFacade.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

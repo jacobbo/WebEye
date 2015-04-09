@@ -1,6 +1,4 @@
-#define DSUTILS_API extern "C" __declspec(dllexport)
-
-#include "dsutils.h"
+#include "DirectShowFacade.h"
 
 #define _ATL_NO_AUTOMATIC_NAMESPACE
 #include <atlbase.h>
@@ -8,8 +6,6 @@
 #include <dshow.h>
 #include <D3d9.h>
 #include <Vmr9.h>
-
-#include "resource.h"
 
 #pragma comment(lib, "strmiids")
 
@@ -23,7 +19,7 @@ CComPtr<IMediaControl> g_spMediaControl;
 bool g_GraphIsRunning = false;
 
 HWND g_hWnd = NULL;
-WNDPROC  g_OrigWndProc = NULL;
+WNDPROC g_OrigWndProc = NULL;
 
 struct VideoInputDeviceInfo
 {
@@ -215,7 +211,7 @@ void InvalidateWindow()
     }
 }
 
-DSUTILS_API void __stdcall EnumVideoInputDevices(EnumVideoInputDevicesCallback callback)
+void __stdcall EnumVideoInputDevices(EnumVideoInputDevicesCallback callback)
 {
     ATLASSERT(callback != NULL);
 
@@ -228,7 +224,7 @@ DSUTILS_API void __stdcall EnumVideoInputDevices(EnumVideoInputDevicesCallback c
     }
 }
 
-DSUTILS_API int __stdcall BuildCaptureGraph()
+int __stdcall BuildCaptureGraph()
 {
     ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
@@ -253,7 +249,7 @@ DSUTILS_API int __stdcall BuildCaptureGraph()
     return hr;
 }
 
-DSUTILS_API int __stdcall AddRenderFilter(HWND hWnd)
+int __stdcall AddRenderFilter(HWND hWnd)
 {
     HRESULT hr = g_spRenderFilter.CoCreateInstance(CLSID_VideoMixingRenderer9);
     if (SUCCEEDED(hr))
@@ -279,7 +275,7 @@ DSUTILS_API int __stdcall AddRenderFilter(HWND hWnd)
 
                 g_hWnd = hWnd;
                 g_OrigWndProc = reinterpret_cast<WNDPROC>(::SetWindowLongPtr(hWnd, GWLP_WNDPROC,
-                    reinterpret_cast<LONG>(WindowProc))); 
+                    reinterpret_cast<LONG_PTR>(WindowProc)));
             }
         }
 
@@ -297,7 +293,7 @@ DSUTILS_API int __stdcall AddRenderFilter(HWND hWnd)
     return hr;
 }
 
-DSUTILS_API int __stdcall AddCaptureFilter(BSTR devicePath)
+int __stdcall AddCaptureFilter(BSTR devicePath)
 {
     CComBSTR path;
     HRESULT hr = path.AssignBSTR(devicePath);
@@ -330,7 +326,7 @@ DSUTILS_API int __stdcall AddCaptureFilter(BSTR devicePath)
     return hr;
 }
 
-DSUTILS_API int __stdcall Start()
+int __stdcall Start()
 {
     HRESULT hr(E_UNEXPECTED);
     if (g_spMediaControl == NULL)
@@ -356,7 +352,7 @@ DSUTILS_API int __stdcall Start()
     return hr;
 }
 
-DSUTILS_API int __stdcall Stop()
+int __stdcall Stop()
 {
     HRESULT hr(E_UNEXPECTED);
     if (g_spMediaControl != NULL)
@@ -374,7 +370,7 @@ DSUTILS_API int __stdcall Stop()
     return hr;
 }
 
-DSUTILS_API int __stdcall GetCurrentImage(BYTE **ppDib)
+int __stdcall GetCurrentImage(BYTE **ppDib)
 {
     HRESULT hr(E_UNEXPECTED);
     if (g_spWindowlessControl != NULL && g_GraphIsRunning)
@@ -386,7 +382,7 @@ DSUTILS_API int __stdcall GetCurrentImage(BYTE **ppDib)
     return hr;
 }
 
-DSUTILS_API int __stdcall GetVideoSize(LONG *lpWidth, LONG *lpHeight)
+int __stdcall GetVideoSize(LONG *lpWidth, LONG *lpHeight)
 {
     HRESULT hr(E_UNEXPECTED);
     if (g_spWindowlessControl != NULL && g_GraphIsRunning)
@@ -399,7 +395,7 @@ DSUTILS_API int __stdcall GetVideoSize(LONG *lpWidth, LONG *lpHeight)
     return hr;
 }
 
-DSUTILS_API int __stdcall ResetCaptureGraph()
+int __stdcall ResetCaptureGraph()
 {
     HRESULT hr(E_UNEXPECTED);
     if (g_spGraphBuilder != NULL)
@@ -434,11 +430,11 @@ DSUTILS_API int __stdcall ResetCaptureGraph()
     return hr;
 }
 
-DSUTILS_API void __stdcall DestroyCaptureGraph()
+void __stdcall DestroyCaptureGraph()
 {
     if ((g_hWnd != NULL) && (g_OrigWndProc != NULL))
     {
-        ::SetWindowLongPtr(g_hWnd, GWLP_WNDPROC, reinterpret_cast<LONG>(g_OrigWndProc));
+        ::SetWindowLongPtr(g_hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(g_OrigWndProc));
         g_OrigWndProc = NULL;
         g_hWnd = NULL;
     }
