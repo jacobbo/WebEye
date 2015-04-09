@@ -16,7 +16,7 @@ namespace WebEye
         }
     }
 
-    internal sealed class DirectShowFacade : IDisposable
+    internal sealed class DirectShowProxy : IDisposable
     {
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         internal struct VideoInputDeviceInfo
@@ -69,7 +69,7 @@ namespace WebEye
 
         [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr LoadLibrary(String lpFileName);
-
+        
         /// <summary>
         /// Extracts the directshow utils dll from resources to the temp file and loads it.
         /// </summary>
@@ -77,9 +77,9 @@ namespace WebEye
         private void LoadDll()
         {
             _dllFile = Path.GetTempFileName();
-            using (FileStream stream = new FileStream(_dllFile, FileMode.Create, FileAccess.Write))
+            using (var stream = new FileStream(_dllFile, FileMode.Create, FileAccess.Write))
             {
-                using (BinaryWriter writer = new BinaryWriter(stream))
+                using (var writer = new BinaryWriter(stream))
                 {
                     writer.Write(IsX86Platform ?
                         Resources.DirectShowFacade : Resources.DirectShowFacade64);
@@ -142,10 +142,10 @@ namespace WebEye
         }
 
         /// <summary>
-        /// Initializes a new instance of the DirectShowFacade class.
+        /// Initializes a new instance of the DirectShowProxy class.
         /// </summary>
         /// <exception cref="Win32Exception">Failed to load the utilities dll.</exception>
-        internal DirectShowFacade()
+        internal DirectShowProxy()
         {
             LoadDll();
             BindToDll(_hDll);

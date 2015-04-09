@@ -19,15 +19,15 @@ namespace WebEye
             Dispatcher.ShutdownStarted += OnShutdownStarted; 
         }
 
-        private DirectShowFacade _facade;
+        private DirectShowProxy _proxy;
 
-        private DirectShowFacade Facade
+        private DirectShowProxy Proxy
         {
-            get { return _facade ?? (_facade = new DirectShowFacade()); }
+            get { return _proxy ?? (_proxy = new DirectShowProxy()); }
         }
 
         private readonly List<WebCameraId> _captureDevices = new List<WebCameraId>();
-        private void SaveVideoDevice(ref DirectShowFacade.VideoInputDeviceInfo info)
+        private void SaveVideoDevice(ref DirectShowProxy.VideoInputDeviceInfo info)
         {
             _captureDevices.Add(new WebCameraId(info));
         }
@@ -39,7 +39,7 @@ namespace WebEye
         public IEnumerable<WebCameraId> GetVideoCaptureDevices()
         {
             _captureDevices.Clear();
-            Facade.EnumVideoInputDevices(SaveVideoDevice);
+            Proxy.EnumVideoInputDevices(SaveVideoDevice);
 
             return new List<WebCameraId>(_captureDevices);
         }
@@ -51,8 +51,8 @@ namespace WebEye
         /// <exception cref="DirectShowException">Failed to setup a capture graph.</exception>
         private void InitializeCaptureGraph()
         {
-            Facade.BuildCaptureGraph();
-            Facade.AddRenderFilter(_videoWindow.Handle);
+            Proxy.BuildCaptureGraph();
+            Proxy.AddRenderFilter(_videoWindow.Handle);
         }
 
         private static readonly DependencyPropertyKey IsCapturingPropertyKey
@@ -108,21 +108,21 @@ namespace WebEye
 
             if (_currentCamera != null)
             {
-                Facade.ResetCaptureGraph();
+                Proxy.ResetCaptureGraph();
                 _currentCamera = null;
             }
 
-            Facade.AddCaptureFilter(camera.DevicePath);
+            Proxy.AddCaptureFilter(camera.DevicePath);
             _currentCamera = camera;
 
             try
             {
-                Facade.Start();
+                Proxy.Start();
                 IsCapturing = true;
             }
             catch (DirectShowException)
             {
-                Facade.ResetCaptureGraph();
+                Proxy.ResetCaptureGraph();
                 _currentCamera = null;
                 throw;
             }
@@ -141,7 +141,7 @@ namespace WebEye
                 throw new InvalidOperationException();
             }
 
-            return Facade.GetCurrentImage();
+            return Proxy.GetCurrentImage();
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace WebEye
         [Browsable(false)]
         public Size VideoSize
         {
-            get { return IsCapturing ? Facade.GetVideoSize() : new Size(0, 0); }
+            get { return IsCapturing ? Proxy.GetVideoSize() : new Size(0, 0); }
         }
 
         /// <summary>
@@ -165,24 +165,24 @@ namespace WebEye
                 throw new InvalidOperationException();
             }
 
-            Facade.Stop();
+            Proxy.Stop();
             IsCapturing = false;
 
-            Facade.ResetCaptureGraph();
+            Proxy.ResetCaptureGraph();
             _currentCamera = null;
         }
 
         private void OnShutdownStarted(object sender, EventArgs eventArgs)
         {
-            if (_facade != null)
+            if (_proxy != null)
             {
                 if (IsCapturing)
                 {
                     StopCapture();
                 }
 
-                _facade.DestroyCaptureGraph();
-                _facade.Dispose();
+                _proxy.DestroyCaptureGraph();
+                _proxy.Dispose();
             }
         }
 

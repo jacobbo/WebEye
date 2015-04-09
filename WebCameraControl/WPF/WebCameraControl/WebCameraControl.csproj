@@ -51,7 +51,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="DirectShowFacade.cs" />
+    <Compile Include="DirectShowProxy.cs" />
     <Compile Include="VideoWindow.cs" />
     <Compile Include="WebCameraControl.xaml.cs">
       <DependentUpon>WebCameraControl.xaml</DependentUpon>
