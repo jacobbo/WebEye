@@ -2,7 +2,7 @@ The WebCameraControl is a web camera control, a simple and easy to use one, no a
 
 The repository has the following structure.
 
-1. DSUtils is a set of utilities to work with a DirectShow capture graph.
+1. DirectShowFacade is a set of utilities to work with a DirectShow capture graph.
 
 2. WPF
     2.1. WebCameraControl is a WPF version of the control.
@@ -16,3 +16,9 @@ More details about the control and its implementation can be found on the follow
 www.codeproject.com/Articles/330177/Yet-another-Web-Camera-control 
 
 This project is licensed under The Code Project Open License (CPOL).
+*The main points subject to the terms of the CPOL are:
+
+* Source Code and Executable Files can be used in commercial applications;
+* Source Code and Executable Files can be redistributed; and
+* Source Code can be modified to create derivative works.
+* No claim of suitability, guarantee, or any warranty whatsoever is provided. The software is provided "as-is".*
