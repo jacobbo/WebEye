@@ -15,7 +15,7 @@ The repository has the following structure.
 More details about the control and its implementation can be found on the following page:
 www.codeproject.com/Articles/330177/Yet-another-Web-Camera-control 
 
-This project is licensed under The Code Project Open License (CPOL).
+This project is licensed under [The Code Project Open License] (http://www.codeproject.com/info/cpol10.aspx) (CPOL).
 *The main points subject to the terms of the CPOL are:
 
 * Source Code and Executable Files can be used in commercial applications;
