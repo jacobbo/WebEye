@@ -16,7 +16,7 @@ More details about the control and its implementation can be found on the follow
 http://www.codeproject.com/Articles/885869/Stream-Player-control
 
 The FFmpeg façade sources, the same as the FFmpeg framework, are licensed under [The LGPL license] (http://www.gnu.org/licenses/lgpl-3.0.html). 
-This project is licensed under [The Code Project Open License] (http://www.codeproject.com/info/cpol10.aspx) (CPOL).
+The .NET controls' sources and demos' sources are licensed under [The Code Project Open License] (http://www.codeproject.com/info/cpol10.aspx) (CPOL).
 The main points subject to the terms of the CPOL are:
 
 * Source Code and Executable Files can be used in commercial applications;
