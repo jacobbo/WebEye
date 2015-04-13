@@ -246,6 +246,11 @@ namespace WebEye
                 BITMAPINFOHEADER biHeader = (BITMAPINFOHEADER)Marshal.PtrToStructure(dibPtr, typeof(BITMAPINFOHEADER));
                 Int32 stride = biHeader.biWidth * (biHeader.biBitCount / 8);
 
+                // The bits in the array are packed together, but each scan line must be
+                // padded with zeros to end on a LONG data-type boundary.
+                Int32 padding = stride % 4 > 0 ? 4 - stride % 4 : 0;
+                stride += padding;
+
                 PixelFormat pixelFormat = PixelFormat.Undefined;
                 switch (biHeader.biBitCount)
                 {
