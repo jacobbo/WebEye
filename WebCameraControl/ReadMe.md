@@ -5,12 +5,12 @@ The repository has the following structure.
 1. DirectShowFacade is a set of utilities to work with a DirectShow capture graph.
 
 2. WPF
-    2.1. WebCameraControl is a WPF version of the control.
-    2.2. WebCameraDemo is a very basic WPF application that shows how to use the control.
+  2.1. WebCameraControl is a WPF version of the control.
+  2.2. WebCameraDemo is a very basic WPF application that shows how to use the control.
     
 3. WinForms
-    3.1. WebCameraControl is a WinForms version of the control.
-    3.2. WebCameraDemo is a very basic WinForms application that shows how to use the control.    
+  3.1. WebCameraControl is a WinForms version of the control.
+  3.2. WebCameraDemo is a very basic WinForms application that shows how to use the control.    
 
 More details about the control and its implementation can be found on the following page:
 www.codeproject.com/Articles/330177/Yet-another-Web-Camera-control 
