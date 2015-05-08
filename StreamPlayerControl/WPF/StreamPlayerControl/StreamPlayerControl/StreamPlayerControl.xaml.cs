@@ -15,7 +15,7 @@ namespace WebEye
         {
             InitializeComponent();
 
-            Dispatcher.ShutdownStarted += HandleShutdownStarted; 
+            Dispatcher.ShutdownStarted += HandleShutdownStarted;
         }
 
         private StreamPlayerProxy _player;
@@ -55,6 +55,31 @@ namespace WebEye
 
             Player.Open(url);
             Player.Play();
+
+            IsPlaying = true;
+        }
+
+        /// <summary>
+        /// Plays and awaits the stream
+        /// </summary>
+        /// <param name="url">The url of a stream to play.</param>
+        /// <exception cref="ArgumentException">An invalid string is passed as an argument.</exception>
+        /// <exception cref="Win32Exception">Failed to load the FFmpeg facade dll.</exception>
+        /// <exception cref="StreamPlayerException">Failed to play the stream.</exception>
+        public void PlayAndAwaitStream(String url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                throw new ArgumentException();
+            }
+
+            if (IsPlaying)
+            {
+                Stop();
+            }
+
+            Player.Open(url);
+            Player.Play(true);
 
             IsPlaying = true;
         }
