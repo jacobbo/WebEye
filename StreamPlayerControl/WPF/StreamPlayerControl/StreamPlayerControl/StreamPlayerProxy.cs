@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using WebEye.Properties;
 using Size = System.Windows.Size;
 
@@ -54,11 +55,28 @@ namespace WebEye
         /// <summary>
         /// Plays the stream opened by the Open method.
         /// </summary>
-        internal void Play()
+        /// <param name="awaitStream">If set the method awaits for video stream before exiting</param>
+        internal void Play(bool awaitStream=false)
         {
             if (_play() != 0)
             {
                 throw new StreamPlayerException("Failed to play the stream.");
+            }
+
+            if (awaitStream)
+            {
+                bool success = false;
+                while (!success)
+                {
+                    try
+                    {
+                        Thread.Sleep(100);
+                        GetCurrentFrame();
+                        success = true;
+                    }
+                    catch
+                    { }
+                }
             }
         }
 
@@ -126,7 +144,7 @@ namespace WebEye
                 stride += padding;
 
                 Bitmap image = new Bitmap(biHeader.biWidth, biHeader.biHeight, stride,
-                    PixelFormat.Format24bppRgb, (IntPtr) (dibPtr.ToInt64() + Marshal.SizeOf(biHeader)));
+                    PixelFormat.Format24bppRgb, (IntPtr)(dibPtr.ToInt64() + Marshal.SizeOf(biHeader)));
                 image.RotateFlip(RotateFlipType.RotateNoneFlipY);
 
                 return image;
@@ -167,10 +185,10 @@ namespace WebEye
 
             if (File.Exists(_dllFile))
             {
-                 File.Delete(_dllFile);
+                File.Delete(_dllFile);
             }
         }
-        
+
         [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr LoadLibrary(String lpFileName);
 
@@ -232,7 +250,7 @@ namespace WebEye
                 (StopDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(StopDelegate));
 
             pProcPtr = GetProcAddress(hDll, "Uninitialize");
-            _uninitialize = (UninitializeDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(UninitializeDelegate));            
+            _uninitialize = (UninitializeDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(UninitializeDelegate));
         }
 
         private delegate Int32 InitializeDelegate(IntPtr hWnd);
