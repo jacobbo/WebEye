@@ -9,19 +9,106 @@ using namespace FFmpeg::Facade;
 WNDPROC StreamPlayer::originalWndProc_ = nullptr;
 
 StreamPlayer::StreamPlayer()
-    : window_(nullptr), stopRequested_(false), formatCtxPtr_(nullptr),
+    : playerParams_(), stopRequested_(false), formatCtxPtr_(nullptr),
     codecCtxPtr_(nullptr), videoStreamIndex_(-1) { }
 
-void StreamPlayer::Initialize(HWND window)
+void StreamPlayer::Initialize(StreamPlayerParams params)
 {
-    window_ = window;
+    assert(params.playFailedCallback != nullptr);
+    assert(params.playSucceededCallback != nullptr);
+    assert(params.window != nullptr);
+    //window_ = window;
+    playerParams_ = params;
 
-    ::SetWindowLongPtr(window_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+    ::SetWindowLongPtr(playerParams_.window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 
-    originalWndProc_ = reinterpret_cast<WNDPROC>(::SetWindowLongPtr(window_, GWLP_WNDPROC,
+    originalWndProc_ = reinterpret_cast<WNDPROC>(::SetWindowLongPtr(playerParams_.window, GWLP_WNDPROC,
         reinterpret_cast<LONG_PTR>(WndProc)));
 }
 
+void StreamPlayer::StartPlay(string const& url)
+{
+    assert(playerParams_.window != nullptr);
+
+    streamUrl_ = url;
+
+    Stop();
+
+    stopRequested_ = false;
+
+    static boost::once_flag flag = BOOST_ONCE_INIT;
+    boost::call_once(flag, []()
+    {
+        av_register_all();
+        avdevice_register_all();
+        avcodec_register_all();
+        avformat_network_init();
+    });
+
+    AVDictionary *streamOpts = nullptr;
+    av_dict_set(&streamOpts, "stimeout", "5000000", 0); // 5 seconds timeout.
+
+    AVFormatContext *formatCtxPtr = avformat_alloc_context();
+    if (avformat_open_input(&formatCtxPtr, url.c_str(), nullptr, &streamOpts) != 0)
+    {
+        //char errstr[1024] = {'\0'};
+        //av_strerror(err, errstr, sizeof(errstr));
+
+        av_dict_free(&streamOpts);
+        ::PostMessage(playerParams_.window, WM_PLAYFAILED, 0, 0);
+        return;
+    }
+
+    av_dict_free(&streamOpts);
+
+    if (avformat_find_stream_info(formatCtxPtr, nullptr) < 0)
+    {
+        avformat_close_input(&formatCtxPtr);
+        ::PostMessage(playerParams_.window, WM_PLAYFAILED, 0, 0);
+        return;
+    }
+
+    int32_t streamIndex = -1;
+    for (size_t i = 0; i < formatCtxPtr->nb_streams; i++)
+    {
+        if (formatCtxPtr->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
+        {
+            streamIndex = i;
+            break;
+        }
+    }
+
+    if (streamIndex == -1)
+    {
+        avformat_close_input(&formatCtxPtr);
+        ::PostMessage(playerParams_.window, WM_PLAYFAILED, 0, 0);
+        return;
+    }
+
+    AVCodecContext *codecCtxPtr = formatCtxPtr->streams[streamIndex]->codec;
+    AVCodec *pCodec = avcodec_find_decoder(codecCtxPtr->codec_id);
+    if (pCodec == nullptr)
+    {
+        avformat_close_input(&formatCtxPtr);
+        ::PostMessage(playerParams_.window, WM_PLAYFAILED, 0, 0);
+        return;
+    }
+
+    if (avcodec_open2(codecCtxPtr, pCodec, nullptr) < 0)
+    {
+        avcodec_close(codecCtxPtr);
+        avformat_close_input(&formatCtxPtr);
+        ::PostMessage(playerParams_.window, WM_PLAYFAILED, 0, 0);
+        return;
+    }
+
+    formatCtxPtr_ = formatCtxPtr;
+    codecCtxPtr_ = codecCtxPtr;
+    videoStreamIndex_ = streamIndex;
+
+    rendererThread_ = boost::thread(&StreamPlayer::Render, this);
+}
+/*
 void StreamPlayer::Open(string const& url)
 {
     Stop();
@@ -94,7 +181,7 @@ void StreamPlayer::Open(string const& url)
 void StreamPlayer::Play()
 {
     rendererThread_ = boost::thread(&StreamPlayer::Render, this);
-}
+}*/
 
 void StreamPlayer::Render()
 {
@@ -102,15 +189,11 @@ void StreamPlayer::Render()
 
     AVPixelFormat pixelFormat = AV_PIX_FMT_BGR24;
 
-    AVPicture avRgbFrame;
-    avpicture_alloc(&avRgbFrame, pixelFormat, codecCtxPtr_->width, codecCtxPtr_->height);
-
     SwsContext *imgConvertCtx = sws_getContext(codecCtxPtr_->width, codecCtxPtr_->height,
         codecCtxPtr_->pix_fmt, codecCtxPtr_->width, codecCtxPtr_->height,
         pixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
 
-    AVPacket packet;
-    AVFrame *avframePtr = ::av_frame_alloc();
+    bool playSucceeded = false;
 
     for (;;)
     {
@@ -118,6 +201,9 @@ void StreamPlayer::Render()
         {
             break;
         }
+
+        AVPacket packet;
+        av_init_packet(&packet);
 
         if (av_read_frame(formatCtxPtr_, &packet) < 0)
         {
@@ -127,10 +213,20 @@ void StreamPlayer::Render()
         if (packet.stream_index == videoStreamIndex_)
         {
             int32_t frameFinished = 0;
+            AVFrame *avframePtr = av_frame_alloc();
             avcodec_decode_video2(codecCtxPtr_, avframePtr, &frameFinished, &packet);
 
             if (frameFinished != 0)
             {
+                if (!playSucceeded)
+                {
+                    ::PostMessage(playerParams_.window, WM_PLAYSUCCEEDED, 0, 0);
+                    playSucceeded = true;
+                }
+
+                AVPicture avRgbFrame;
+                avpicture_alloc(&avRgbFrame, pixelFormat, codecCtxPtr_->width, codecCtxPtr_->height);
+
                 sws_scale(imgConvertCtx, ((AVPicture*)avframePtr)->data,
                     ((AVPicture*)avframePtr)->linesize, 0, codecCtxPtr_->height,
                     avRgbFrame.data, avRgbFrame.linesize);
@@ -144,21 +240,23 @@ void StreamPlayer::Render()
                 else
                     framePtr_->Update(avRgbFrame);
 
-                ::PostMessage(window_, WM_INVALIDATE, 0, 0);
+                avpicture_free(&avRgbFrame);
 
-                av_free_packet(&packet);
+                ::PostMessage(playerParams_.window, WM_INVALIDATE, 0, 0);
 
                 const auto millisecondsToWait = codecCtxPtr_->ticks_per_frame * 1000 *
                     codecCtxPtr_->time_base.num / codecCtxPtr_->time_base.den;
                 boost::this_thread::sleep_for(boost::chrono::milliseconds(millisecondsToWait));
             }
+
+            av_frame_free(&avframePtr);
         }
+
+        av_free_packet(&packet);
     }
 
     sws_freeContext(imgConvertCtx);
-    av_frame_free(&avframePtr);
-    avpicture_free(&avRgbFrame);
-    av_free_packet(&packet);
+
     avcodec_close(codecCtxPtr_);
     avformat_close_input(&formatCtxPtr_);
     avformat_free_context(formatCtxPtr_);
@@ -176,21 +274,22 @@ void StreamPlayer::Uninitialize()
 {
     Stop();
 
-    if (window_ != INVALID_HANDLE_VALUE && originalWndProc_ != nullptr)
+    if (playerParams_.window != nullptr && originalWndProc_ != nullptr)
     {
         // clear message queue
         MSG msg;
-        while (::PeekMessage(&msg, window_, 0, 0, PM_REMOVE)) {}
+        while (::PeekMessage(&msg, playerParams_.window, 0, 0, PM_REMOVE)) {}
 
-        ::SetWindowLongPtr(window_, GWLP_USERDATA, 0);
-        ::SetWindowLongPtr(window_, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(originalWndProc_));
+        ::SetWindowLongPtr(playerParams_.window, GWLP_USERDATA, 0);
+        ::SetWindowLongPtr(playerParams_.window, GWLP_WNDPROC,
+            reinterpret_cast<LONG_PTR>(originalWndProc_));
     }
 }
 
 void StreamPlayer::DrawFrame()
 {
     if (framePtr_ != nullptr)
-        framePtr_->Draw(window_);
+        framePtr_->Draw(playerParams_.window);
 }
 
 LRESULT APIENTRY StreamPlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -210,6 +309,14 @@ LRESULT APIENTRY StreamPlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 
     case WM_PAINT:
         playerPtr->DrawFrame();
+        break;
+
+    case WM_PLAYFAILED:
+        playerPtr->RaisePlayFailedEvent();
+        break;
+
+    case WM_PLAYSUCCEEDED:
+        playerPtr->RaisePlaySucceededEvent();
         break;
 
     default: break;
@@ -235,4 +342,16 @@ void StreamPlayer::GetFrameSize(uint32_t *widthPtr, uint32_t *heightPtr)
 
     *widthPtr = framePtr_->Width();
     *heightPtr = framePtr_->Height();
+}
+
+void StreamPlayer::RaisePlaySucceededEvent()
+{
+    if (playerParams_.playSucceededCallback != nullptr)
+        playerParams_.playSucceededCallback();
+}
+
+void StreamPlayer::RaisePlayFailedEvent()
+{
+    if (playerParams_.playFailedCallback != nullptr)
+        playerParams_.playFailedCallback();
 }

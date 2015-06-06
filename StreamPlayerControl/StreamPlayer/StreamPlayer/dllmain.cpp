@@ -8,11 +8,11 @@
 
 FFmpeg::Facade::StreamPlayer player;
 
-STREAMPLAYER_API int32_t __stdcall Initialize(HWND window)
+STREAMPLAYER_API int32_t __stdcall Initialize(FFmpeg::Facade::StreamPlayerParams params)
 {
     try
     {
-        player.Initialize(window);
+        player.Initialize(params);
     }
     catch (std::runtime_error &)
     {
@@ -22,11 +22,11 @@ STREAMPLAYER_API int32_t __stdcall Initialize(HWND window)
     return 0;
 }
 
-STREAMPLAYER_API int32_t __stdcall Open(const char* url)
+STREAMPLAYER_API int32_t __stdcall StartPlay(const char* url)
 {
     try
     {
-        player.Open(url);
+        player.StartPlay(url);
     }
     catch (std::runtime_error &)
     {
@@ -36,7 +36,7 @@ STREAMPLAYER_API int32_t __stdcall Open(const char* url)
     return 0;
 }
 
-STREAMPLAYER_API int32_t __stdcall Play()
+/*STREAMPLAYER_API int32_t __stdcall Play()
 {
     try
     {
@@ -48,7 +48,7 @@ STREAMPLAYER_API int32_t __stdcall Play()
     }
 
     return 0;
-}
+}*/
 
 STREAMPLAYER_API int32_t __stdcall GetCurrentFrame(uint8_t** bmp_ptr)
 {

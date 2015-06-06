@@ -1,8 +1,7 @@
 LIBRARY	"StreamPlayer"
 
 EXPORTS Initialize
-        Open
-        Play
+        StartPlay
 		GetCurrentFrame
 		GetFrameSize
         Stop

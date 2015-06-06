@@ -36,7 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="StreamPlayerControl">
-      <HintPath>..\..\StreamPlayerControl\StreamPlayerControl\bin\Release\StreamPlayerControl.dll</HintPath>
+      <HintPath>..\..\StreamPlayerControl\StreamPlayerControl\bin\Debug\StreamPlayerControl.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />

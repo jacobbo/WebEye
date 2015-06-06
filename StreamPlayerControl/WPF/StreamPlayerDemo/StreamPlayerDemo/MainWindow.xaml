@@ -9,7 +9,9 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <webEye:StreamPlayerControl x:Name="streamPlayerControl"/>
+            <webEye:StreamPlayerControl x:Name="streamPlayerControl"
+                                        PlayFailed="HandlePlayFailed"
+                                        PlaySucceeded="HandlePlaySucceeded"/>
 
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>

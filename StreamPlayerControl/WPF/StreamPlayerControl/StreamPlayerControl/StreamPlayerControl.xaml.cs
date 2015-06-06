@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows;
 using Size = System.Windows.Size;
 
@@ -27,7 +28,21 @@ namespace WebEye
                 if (_player == null)
                 {
                     _player = new StreamPlayerProxy();
-                    _player.Initialize(_videoWindow.Handle);
+
+                    var playFailedCallback = (Delegate)new ManagedTypeSignature(PlayFailedCallback);
+                    //IntPtr nativeThunk = Marshal.GetFunctionPointerForDelegate(playFailedCallback);
+
+                    var playSucceededCallback = (Delegate)new ManagedTypeSignature(PlaySucceededCallback);
+                    //IntPtr nativeThunk = Marshal.GetFunctionPointerForDelegate(playFailedCallback);
+
+                    var playerParams = new StreamPlayerParams
+                    {
+                        window = _videoWindow.Handle,
+                        playFailedCallback = Marshal.GetFunctionPointerForDelegate(playFailedCallback),
+                        playSucceededCallback = Marshal.GetFunctionPointerForDelegate(playSucceededCallback)
+                    };
+
+                    _player.Initialize(playerParams);
                 }
 
                 return _player;
@@ -35,13 +50,13 @@ namespace WebEye
         }
 
         /// <summary>
-        /// Plays a stream.
+        /// Asynchronously plays a stream.
         /// </summary>
         /// <param name="url">The url of a stream to play.</param>
         /// <exception cref="ArgumentException">An invalid string is passed as an argument.</exception>
         /// <exception cref="Win32Exception">Failed to load the FFmpeg facade dll.</exception>
         /// <exception cref="StreamPlayerException">Failed to play the stream.</exception>
-        public void Play(String url)
+        public void StartPlay(String url)
         {
             if (string.IsNullOrWhiteSpace(url))
             {
@@ -53,10 +68,10 @@ namespace WebEye
                 Stop();
             }
 
-            Player.Open(url);
-            Player.Play();
+            Player.StartPlay(url);
+            //Player.Play();
 
-            IsPlaying = true;
+            //IsPlaying = true;
         }
 
         /// <summary>
@@ -138,6 +153,58 @@ namespace WebEye
             {
                 throw new InvalidOperationException();
             }
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+        delegate void ManagedTypeSignature();
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct StreamPlayerParams
+        {
+            public IntPtr window;
+            public IntPtr playFailedCallback;
+            public IntPtr playSucceededCallback;
+        }
+
+        private void PlayFailedCallback()
+        {
+            RaisePlayFailedEvent();
+        }
+
+        private void PlaySucceededCallback()
+        {
+            RaisePlaySucceededEvent();
+        }
+
+        public static readonly RoutedEvent PlayFailedEvent =
+            EventManager.RegisterRoutedEvent("PlayFailed", RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler), typeof(StreamPlayerControl));
+
+        public event RoutedEventHandler PlayFailed
+        {
+            add { AddHandler(PlayFailedEvent, value); }
+            remove { RemoveHandler(PlayFailedEvent, value); }
+        }
+
+        private void RaisePlayFailedEvent()
+        {
+            RaiseEvent(new RoutedEventArgs(PlayFailedEvent));
+        }
+
+        public static readonly RoutedEvent PlaySucceededEvent =
+            EventManager.RegisterRoutedEvent("PlaySucceeded", RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler), typeof(StreamPlayerControl));
+
+        public event RoutedEventHandler PlaySucceeded
+        {
+            add { AddHandler(PlaySucceededEvent, value); }
+            remove { RemoveHandler(PlaySucceededEvent, value); }
+        }
+
+        private void RaisePlaySucceededEvent()
+        {
+            IsPlaying = true;
+            RaiseEvent(new RoutedEventArgs(PlaySucceededEvent));
         }
     }
 }

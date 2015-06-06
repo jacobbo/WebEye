@@ -13,6 +13,8 @@
 #include "frame.h"
 
 #define WM_INVALIDATE WM_USER + 1
+#define WM_PLAYFAILED WM_INVALIDATE + 1
+#define WM_PLAYSUCCEEDED WM_PLAYFAILED + 1
 
 namespace FFmpeg
 {
@@ -48,6 +50,20 @@ namespace FFmpeg
 
     namespace Facade
     {
+        typedef void(__stdcall *PlaySucceededCallback)();
+        typedef void(__stdcall *PlayFailedCallback)();
+
+        struct StreamPlayerParams
+        {
+            StreamPlayerParams()
+                : window(nullptr), playFailedCallback(nullptr), playSucceededCallback(nullptr) {}
+
+            HWND window;
+            PlayFailedCallback playFailedCallback;
+            PlaySucceededCallback playSucceededCallback;            
+        };
+
+
         /// <summary>
         /// A StreamPlayer class implements a stream playback functionality.
         /// </summary>
@@ -63,19 +79,25 @@ namespace FFmpeg
             /// <summary>
             /// Initializes the player.
             /// </summary>
-            /// <param name="window">A container window that video should be clipped to.</param>
-            void Initialize(HWND window);
+            /// <param name="params">A container window that video should be clipped to.</param>
+            void Initialize(StreamPlayerParams params);
+
+            /// <summary>
+            /// Asynchronously plays a stream.
+            /// </summary>
+            /// <param name="url">The url of a stream to play.</param>
+            void StartPlay(std::string const& url);
 
             /// <summary>
             /// Opens a stream.
             /// </summary>
             /// <param name="url">The url of a stream to open.</param>
-            void Open(std::string const& url);
+            //void Open(std::string const& url);
 
             /// <summary>
             /// Plays the stream opened by the Open method.
             /// </summary>
-            void Play();
+            //void Play();
 
             /// <summary>
             /// Stops a stream.
@@ -104,12 +126,17 @@ namespace FFmpeg
 
             void Render();
             void DrawFrame();
+            void RaisePlaySucceededEvent();
+            void RaisePlayFailedEvent();
+
             static LRESULT APIENTRY WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
         private:
 
-            HWND window_;
+            //HWND window_;
             boost::atomic<bool> stopRequested_;
+            std::string streamUrl_;
+            StreamPlayerParams playerParams_;
 
             AVFormatContext *formatCtxPtr_;
             AVCodecContext  *codecCtxPtr_;

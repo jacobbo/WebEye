@@ -31,36 +31,37 @@ namespace WebEye
         /// Initializes the player.
         /// </summary>
         /// <param name="window">A container window that video should be clipped to.</param>
-        internal void Initialize(IntPtr window)
+        internal void Initialize(StreamPlayerControl.StreamPlayerParams playerParams)
         {
-            if (_initialize(window) != 0)
+            if (_initialize(playerParams) != 0)
             {
                 throw new StreamPlayerException("Failed to initialize the player.");
             }
         }
 
+
         /// <summary>
-        /// Opens a stream.
+        /// Asynchronously plays a stream.
         /// </summary>
-        /// <param name="url">The url of a stream to open.</param>
-        internal void Open(String url)
+        /// <param name="url">The url of a stream to play.</param>
+        internal void StartPlay(String url)
         {
-            if (_open(url) != 0)
+            if (_startPlayDelegate(url) != 0)
             {
-                throw new StreamPlayerException("Failed to open the stream.");
+                throw new StreamPlayerException("Failed to play the stream.");
             }
         }
 
         /// <summary>
         /// Plays the stream opened by the Open method.
         /// </summary>
-        internal void Play()
+        /*internal void Play()
         {
             if (_play() != 0)
             {
                 throw new StreamPlayerException("Failed to play the stream.");
             }
-        }
+        }*/
 
         /// <summary>
         /// Stops a stream.
@@ -209,13 +210,13 @@ namespace WebEye
             _initialize =
                 (InitializeDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(InitializeDelegate));
 
-            pProcPtr = GetProcAddress(hDll, "Open");
-            _open =
-                (OpenDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(OpenDelegate));
+            //pProcPtr = GetProcAddress(hDll, "Open");
+            //_open =
+            //    (OpenDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(OpenDelegate));
 
-            pProcPtr = GetProcAddress(hDll, "Play");
-            _play =
-                (PlayDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(PlayDelegate));
+            pProcPtr = GetProcAddress(hDll, "StartPlay");
+            _startPlayDelegate =
+                (StartPlayDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(StartPlayDelegate));
 
             pProcPtr = GetProcAddress(hDll, "GetCurrentFrame");
             _getCurrentFrame =
@@ -235,14 +236,14 @@ namespace WebEye
             _uninitialize = (UninitializeDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(UninitializeDelegate));            
         }
 
-        private delegate Int32 InitializeDelegate(IntPtr hWnd);
+        private delegate Int32 InitializeDelegate(StreamPlayerControl.StreamPlayerParams playerParams);
         private InitializeDelegate _initialize;
 
-        private delegate Int32 OpenDelegate([MarshalAs(UnmanagedType.LPStr)]String url);
-        private OpenDelegate _open;
+        private delegate Int32 StartPlayDelegate([MarshalAs(UnmanagedType.LPStr)]String url);
+        private StartPlayDelegate _startPlayDelegate;
 
-        private delegate Int32 PlayDelegate();
-        private PlayDelegate _play;
+        //private delegate Int32 PlayDelegate();
+        //private PlayDelegate _play;
 
         private delegate Int32 GetCurrentFrameDelegate([Out] out IntPtr dibPtr);
         private GetCurrentFrameDelegate _getCurrentFrame;

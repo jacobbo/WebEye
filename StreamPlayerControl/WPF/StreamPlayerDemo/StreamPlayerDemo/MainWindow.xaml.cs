@@ -15,14 +15,7 @@ namespace StreamPlayerDemo
 
         private void HandlePlayButtonClick(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                streamPlayerControl.Play(_urlTextBox.Text);
-            }
-            finally
-            {
-                UpdateButtons();
-            }
+            streamPlayerControl.StartPlay(_urlTextBox.Text);
         }
 
         private void HandleStopButtonClick(object sender, RoutedEventArgs e)
@@ -46,6 +39,18 @@ namespace StreamPlayerDemo
             _playButton.IsEnabled = !streamPlayerControl.IsPlaying; 
             _stopButton.IsEnabled = streamPlayerControl.IsPlaying;
             _imageButton.IsEnabled = streamPlayerControl.IsPlaying;
+        }
+
+        private void HandlePlayFailed(object sender, RoutedEventArgs e)
+        {
+            //throw new System.NotImplementedException();
+            UpdateButtons();
+        }
+
+        private void HandlePlaySucceeded(object sender, RoutedEventArgs e)
+        {
+            //throw new System.NotImplementedException();
+            UpdateButtons();
         }
     }
 }
