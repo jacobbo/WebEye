@@ -30,7 +30,7 @@ namespace WebEye
         /// <summary>
         /// Initializes the player.
         /// </summary>
-        /// <param name="window">A container window that video should be clipped to.</param>
+        /// <param name="playerParams">The StreamPlayerParams object that contains the information that is used to initialize the player.</param>
         internal void Initialize(StreamPlayerControl.StreamPlayerParams playerParams)
         {
             if (_initialize(playerParams) != 0)

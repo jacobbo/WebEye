@@ -27,22 +27,7 @@ namespace WebEye
             {
                 if (_player == null)
                 {
-                    _player = new StreamPlayerProxy();
-
-                    var playFailedCallback = (Delegate)new ManagedTypeSignature(PlayFailedCallback);
-                    //IntPtr nativeThunk = Marshal.GetFunctionPointerForDelegate(playFailedCallback);
-
-                    var playSucceededCallback = (Delegate)new ManagedTypeSignature(PlaySucceededCallback);
-                    //IntPtr nativeThunk = Marshal.GetFunctionPointerForDelegate(playFailedCallback);
-
-                    var playerParams = new StreamPlayerParams
-                    {
-                        window = _videoWindow.Handle,
-                        playFailedCallback = Marshal.GetFunctionPointerForDelegate(playFailedCallback),
-                        playSucceededCallback = Marshal.GetFunctionPointerForDelegate(playSucceededCallback)
-                    };
-
-                    _player.Initialize(playerParams);
+                    _player = CreateAndInitializePlayer();
                 }
 
                 return _player;
@@ -52,23 +37,23 @@ namespace WebEye
         /// <summary>
         /// Asynchronously plays a stream.
         /// </summary>
-        /// <param name="url">The url of a stream to play.</param>
+        /// <param name="uri">The uri of a stream to play.</param>
         /// <exception cref="ArgumentException">An invalid string is passed as an argument.</exception>
         /// <exception cref="Win32Exception">Failed to load the FFmpeg facade dll.</exception>
         /// <exception cref="StreamPlayerException">Failed to play the stream.</exception>
-        public void StartPlay(String url)
+        public void StartPlay(Uri uri)
         {
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                throw new ArgumentException();
-            }
+            //if (string.IsNullOrWhiteSpace(url))
+            //{
+            //    throw new ArgumentException("url");
+            //}
 
             if (IsPlaying)
             {
                 Stop();
             }
 
-            Player.StartPlay(url);
+            Player.StartPlay(uri.ToString());
             //Player.Play();
 
             //IsPlaying = true;
@@ -155,56 +140,101 @@ namespace WebEye
             }
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
-        delegate void ManagedTypeSignature();
-
+        /// <summary>
+        /// Specifies a set of values that are used when you start the player.
+        /// </summary>
         [StructLayout(LayoutKind.Sequential)]
         internal struct StreamPlayerParams
         {
-            public IntPtr window;
-            public IntPtr playFailedCallback;
-            public IntPtr playSucceededCallback;
+            internal IntPtr window;
+            internal IntPtr streamStartedCallback;
+            internal IntPtr streamStoppedCallback;
+            internal IntPtr streamFailedCallback;
         }
 
-        private void PlayFailedCallback()
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+        delegate void CallbackDelegate();
+        
+        private Delegate _streamStartedCallback;
+        private Delegate _streamStoppedCallback;
+        private Delegate _streamFailedCallback;
+
+        private StreamPlayerProxy CreateAndInitializePlayer()
         {
-            RaisePlayFailedEvent();
+            var player = new StreamPlayerProxy();
+
+            _streamStartedCallback = new CallbackDelegate(RaiseStreamStartedEvent);
+            _streamStoppedCallback = new CallbackDelegate(RaiseStreamStoppedEvent);
+            _streamFailedCallback = new CallbackDelegate(RaiseStreamFailedEvent);
+            
+            var playerParams = new StreamPlayerParams
+            {
+                window = _videoWindow.Handle,
+                streamStartedCallback = Marshal.GetFunctionPointerForDelegate(_streamStartedCallback),
+                streamStoppedCallback = Marshal.GetFunctionPointerForDelegate(_streamStoppedCallback),
+                streamFailedCallback = Marshal.GetFunctionPointerForDelegate(_streamFailedCallback)
+            };
+
+            player.Initialize(playerParams);
+
+            return player;
         }
 
-        private void PlaySucceededCallback()
-        {
-            RaisePlaySucceededEvent();
-        }
-
-        public static readonly RoutedEvent PlayFailedEvent =
-            EventManager.RegisterRoutedEvent("PlayFailed", RoutingStrategy.Bubble,
+        public static readonly RoutedEvent StreamStartedEvent =
+            EventManager.RegisterRoutedEvent("StreamStarted", RoutingStrategy.Bubble,
             typeof(RoutedEventHandler), typeof(StreamPlayerControl));
 
-        public event RoutedEventHandler PlayFailed
+        /// <summary>
+        /// Occurs when the first frame is read from a stream.
+        /// </summary>
+        public event RoutedEventHandler StreamStarted
         {
-            add { AddHandler(PlayFailedEvent, value); }
-            remove { RemoveHandler(PlayFailedEvent, value); }
+            add { AddHandler(StreamStartedEvent, value); }
+            remove { RemoveHandler(StreamStartedEvent, value); }
         }
 
-        private void RaisePlayFailedEvent()
-        {
-            RaiseEvent(new RoutedEventArgs(PlayFailedEvent));
-        }
-
-        public static readonly RoutedEvent PlaySucceededEvent =
-            EventManager.RegisterRoutedEvent("PlaySucceeded", RoutingStrategy.Bubble,
-            typeof(RoutedEventHandler), typeof(StreamPlayerControl));
-
-        public event RoutedEventHandler PlaySucceeded
-        {
-            add { AddHandler(PlaySucceededEvent, value); }
-            remove { RemoveHandler(PlaySucceededEvent, value); }
-        }
-
-        private void RaisePlaySucceededEvent()
+        private void RaiseStreamStartedEvent()
         {
             IsPlaying = true;
-            RaiseEvent(new RoutedEventArgs(PlaySucceededEvent));
+            RaiseEvent(new RoutedEventArgs(StreamStartedEvent));
+        }
+
+        public static readonly RoutedEvent StreamStoppedEvent =
+            EventManager.RegisterRoutedEvent("StreamStopped", RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler), typeof(StreamPlayerControl));
+
+        /// <summary>
+        /// Occurs when there are no more frames to read from a stream.
+        /// </summary>
+        public event RoutedEventHandler StreamStopped
+        {
+            add { AddHandler(StreamStoppedEvent, value); }
+            remove { RemoveHandler(StreamStoppedEvent, value); }
+        }
+
+        private void RaiseStreamStoppedEvent()
+        {
+            IsPlaying = false;
+            RaiseEvent(new RoutedEventArgs(StreamStoppedEvent));
+        }
+
+        public static readonly RoutedEvent StreamFailedEvent =
+            EventManager.RegisterRoutedEvent("StreamFailed", RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler), typeof(StreamPlayerControl));
+
+        /// <summary>
+        /// Occurs when the player fails to play a stream.
+        /// </summary>
+        public event RoutedEventHandler StreamFailed
+        {
+            add { AddHandler(StreamFailedEvent, value); }
+            remove { RemoveHandler(StreamFailedEvent, value); }
+        }
+
+        private void RaiseStreamFailedEvent()
+        {
+            IsPlaying = false;
+            RaiseEvent(new RoutedEventArgs(StreamFailedEvent));
         }
     }
 }

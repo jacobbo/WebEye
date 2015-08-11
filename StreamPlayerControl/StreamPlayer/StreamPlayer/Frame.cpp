@@ -1,5 +1,6 @@
 #include "frame.h"
 #include <cassert>
+#include <boost/thread/locks.hpp>
 #include <Objbase.h>
 
 using namespace std;

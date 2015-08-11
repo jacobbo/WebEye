@@ -24,6 +24,9 @@
     <ClCompile Include="Frame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Decoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="StreamPlayer.def">
@@ -35,6 +38,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Frame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Decoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

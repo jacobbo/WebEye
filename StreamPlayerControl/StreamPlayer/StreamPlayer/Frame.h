@@ -3,7 +3,13 @@
 
 #include <cstdint>
 #include <boost/noncopyable.hpp>
-#include <boost/thread.hpp>
+
+#pragma warning( push )
+#pragma warning( disable : 4100 )
+
+#include <boost/thread/mutex.hpp>
+
+#pragma warning( pop )
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

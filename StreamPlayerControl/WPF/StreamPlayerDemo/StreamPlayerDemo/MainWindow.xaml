@@ -10,8 +10,9 @@
             </Grid.RowDefinitions>
 
             <webEye:StreamPlayerControl x:Name="streamPlayerControl"
-                                        PlayFailed="HandlePlayFailed"
-                                        PlaySucceeded="HandlePlaySucceeded"/>
+                                        StreamFailed="HandlePlayerEvent"
+                                        StreamStarted="HandlePlayerEvent"
+                                        StreamStopped="HandlePlayerEvent"/>
 
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
