@@ -12,29 +12,19 @@ namespace WindowsFormsApplication1
 
         private void playButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                var uri = new Uri(_urlTextBox.Text);
-                streamPlayerControl1.StartPlay(uri);
-            }
-            finally
-            {
-                UpdateButtons();
-            }
+            var uri = new Uri(_urlTextBox.Text);
+            streamPlayerControl1.StartPlay(uri);
         }
 
         private void stopButton_Click(object sender, EventArgs e)
         {
             streamPlayerControl1.Stop();
-
-            UpdateButtons();
         }
 
         private void imageButton_Click(object sender, EventArgs e)
         {
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
             saveFileDialog1.Filter = "Bitmap Image|*.bmp";
-            saveFileDialog1.Title = "Save an Image File";
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 streamPlayerControl1.GetCurrentFrame().Save(saveFileDialog1.FileName);

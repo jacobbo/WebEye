@@ -23,8 +23,6 @@ namespace StreamPlayerDemo
         private void HandleStopButtonClick(object sender, RoutedEventArgs e)
         {
             streamPlayerControl.Stop();
-
-            UpdateButtons();
         }
 
         private void HandleImageButtonClick(object sender, RoutedEventArgs e)
