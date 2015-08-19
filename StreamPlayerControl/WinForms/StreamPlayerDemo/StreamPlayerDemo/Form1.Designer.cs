@@ -44,6 +44,9 @@
             this.streamPlayerControl1.Name = "streamPlayerControl1";
             this.streamPlayerControl1.Size = new System.Drawing.Size(813, 450);
             this.streamPlayerControl1.TabIndex = 0;
+            this.streamPlayerControl1.StreamStarted += new System.EventHandler(this.HandlePlayerEvent);
+            this.streamPlayerControl1.StreamStopped += new System.EventHandler(this.HandlePlayerEvent);
+            this.streamPlayerControl1.StreamFailed += new System.EventHandler(this.HandlePlayerEvent);
             // 
             // _urlTextBox
             // 

@@ -40,6 +40,7 @@ namespace FFmpeg
 #pragma comment(lib, "libavutil.a")
 #pragma comment(lib, "libswresample.a")
 #pragma comment(lib, "libswscale.a")
+#pragma comment(lib, "libpostproc.a")
 #pragma comment(lib, "WS2_32.lib")
 #pragma comment(lib, "strmiids.lib")
 #pragma comment(lib, "Vfw32.lib")

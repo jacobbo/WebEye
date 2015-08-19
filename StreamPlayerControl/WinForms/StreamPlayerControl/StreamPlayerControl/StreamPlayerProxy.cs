@@ -8,12 +8,24 @@ using WebEye.Properties;
 
 namespace WebEye
 {
+    /// <summary>
+    /// Represents the exception thrown when the stream player fails.
+    /// </summary>
     public sealed class StreamPlayerException : Exception
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StreamPlayerException"/> class.
+        /// </summary>
+        /// <param name="message">
+        /// The message.
+        /// </param>
         internal StreamPlayerException(string message)
             : base(message) { }
     }
 
+    /// <summary>
+    /// Forwards calls to the stream player library.
+    /// </summary>
     internal sealed class StreamPlayerProxy : IDisposable
     {
         /// <summary>
@@ -29,33 +41,22 @@ namespace WebEye
         /// <summary>
         /// Initializes the player.
         /// </summary>
-        /// <param name="window">A container window that video should be clipped to.</param>
-        internal void Initialize(IntPtr window)
+        /// <param name="playerParams">The StreamPlayerParams object that contains the information that is used to initialize the player.</param>
+        internal void Initialize(StreamPlayerControl.StreamPlayerParams playerParams)
         {
-            if (_initialize(window) != 0)
+            if (_initialize(playerParams) != 0)
             {
                 throw new StreamPlayerException("Failed to initialize the player.");
             }
         }
 
         /// <summary>
-        /// Opens a stream.
+        /// Asynchronously plays a stream.
         /// </summary>
-        /// <param name="url">The url of a stream to open.</param>
-        internal void Open(String url)
+        /// <param name="url">The url of a stream to play.</param>
+        internal void StartPlay(String url)
         {
-            if (_open(url) != 0)
-            {
-                throw new StreamPlayerException("Failed to open the stream.");
-            }
-        }
-
-        /// <summary>
-        /// Plays the stream opened by the Open method.
-        /// </summary>
-        internal void Play()
-        {
-            if (_play() != 0)
+            if (_startPlayDelegate(url) != 0)
             {
                 throw new StreamPlayerException("Failed to play the stream.");
             }
@@ -140,9 +141,9 @@ namespace WebEye
         }
 
         /// <summary>
-        /// Retrieves the unstretched frame size.
+        /// Retrieves the frame size.
         /// </summary>
-        /// <returns>The unstretched frame size.</returns>
+        /// <returns>The frame size.</returns>
         internal Size GetFrameSize()
         {
             Int32 width, height;
@@ -169,6 +170,11 @@ namespace WebEye
                  File.Delete(_dllFile);
             }
         }
+
+        private Boolean IsX86Platform
+        {
+            get { return IntPtr.Size == 4; }
+        }
         
         [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr LoadLibrary(String lpFileName);
@@ -184,7 +190,8 @@ namespace WebEye
             {
                 using (var writer = new BinaryWriter(stream))
                 {
-                    writer.Write(Resources.StreamPlayer);
+                    writer.Write(IsX86Platform ?
+                        Resources.StreamPlayer : Resources.StreamPlayer64);
                 }
             }
 
@@ -199,49 +206,40 @@ namespace WebEye
         private static extern IntPtr GetProcAddress(IntPtr hModule, String procName);
 
         /// <summary>
-        /// Binds the class instance methods to the dll functions.
+        /// Binds the class instance methods to the stream player library functions.
         /// </summary>
-        /// <param name="hDll">A dll to bind to.</param>
+        /// <param name="hDll">The library to bind to.</param>
         private void BindToDll(IntPtr hDll)
         {
-            IntPtr pProcPtr = GetProcAddress(hDll, "Initialize");
+            IntPtr procPtr = GetProcAddress(hDll, "Initialize");
             _initialize =
-                (InitializeDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(InitializeDelegate));
+                (InitializeDelegate)Marshal.GetDelegateForFunctionPointer(procPtr, typeof(InitializeDelegate));
 
-            pProcPtr = GetProcAddress(hDll, "Open");
-            _open =
-                (OpenDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(OpenDelegate));
+            procPtr = GetProcAddress(hDll, "StartPlay");
+            _startPlayDelegate =
+                (StartPlayDelegate)Marshal.GetDelegateForFunctionPointer(procPtr, typeof(StartPlayDelegate));
 
-            pProcPtr = GetProcAddress(hDll, "Play");
-            _play =
-                (PlayDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(PlayDelegate));
-
-            pProcPtr = GetProcAddress(hDll, "GetCurrentFrame");
+            procPtr = GetProcAddress(hDll, "GetCurrentFrame");
             _getCurrentFrame =
-                (GetCurrentFrameDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr,
-                typeof(GetCurrentFrameDelegate));
+                (GetCurrentFrameDelegate)Marshal.GetDelegateForFunctionPointer(procPtr, typeof(GetCurrentFrameDelegate));
 
-            pProcPtr = GetProcAddress(hDll, "GetFrameSize");
+            procPtr = GetProcAddress(hDll, "GetFrameSize");
             _getFrameSize =
-                (GetFrameSizeDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr,
-                typeof(GetFrameSizeDelegate));
+                (GetFrameSizeDelegate)Marshal.GetDelegateForFunctionPointer(procPtr, typeof(GetFrameSizeDelegate));
 
-            pProcPtr = GetProcAddress(hDll, "Stop");
+            procPtr = GetProcAddress(hDll, "Stop");
             _stop =
-                (StopDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(StopDelegate));
+                (StopDelegate)Marshal.GetDelegateForFunctionPointer(procPtr, typeof(StopDelegate));
 
-            pProcPtr = GetProcAddress(hDll, "Uninitialize");
-            _uninitialize = (UninitializeDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(UninitializeDelegate));            
+            procPtr = GetProcAddress(hDll, "Uninitialize");
+            _uninitialize = (UninitializeDelegate)Marshal.GetDelegateForFunctionPointer(procPtr, typeof(UninitializeDelegate));
         }
 
-        private delegate Int32 InitializeDelegate(IntPtr hWnd);
+        private delegate Int32 InitializeDelegate(StreamPlayerControl.StreamPlayerParams playerParams);
         private InitializeDelegate _initialize;
 
-        private delegate Int32 OpenDelegate([MarshalAs(UnmanagedType.LPStr)]String url);
-        private OpenDelegate _open;
-
-        private delegate Int32 PlayDelegate();
-        private PlayDelegate _play;
+        private delegate Int32 StartPlayDelegate([MarshalAs(UnmanagedType.LPStr)]String url);
+        private StartPlayDelegate _startPlayDelegate;
 
         private delegate Int32 GetCurrentFrameDelegate([Out] out IntPtr dibPtr);
         private GetCurrentFrameDelegate _getCurrentFrame;

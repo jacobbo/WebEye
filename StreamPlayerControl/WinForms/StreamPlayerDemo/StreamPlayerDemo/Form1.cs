@@ -14,7 +14,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                streamPlayerControl1.Play(_urlTextBox.Text);
+                var uri = new Uri(_urlTextBox.Text);
+                streamPlayerControl1.StartPlay(uri);
             }
             finally
             {
@@ -45,6 +46,11 @@ namespace WindowsFormsApplication1
             _playButton.Enabled = !streamPlayerControl1.IsPlaying;
             _stopButton.Enabled = streamPlayerControl1.IsPlaying;
             _imageButton.Enabled = streamPlayerControl1.IsPlaying;
+        }
+
+        private void HandlePlayerEvent(object sender, EventArgs e)
+        {
+            UpdateButtons();
         }
     }
 }

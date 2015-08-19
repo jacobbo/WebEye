@@ -70,22 +70,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>D:/dev/boost_1_58_0;D:\dev\GitHub\FFmpeg;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\dev\boost_1_58_0\stage\lib;D:\dev\GitHub\ffmpeg\libavformat;D:\dev\GitHub\ffmpeg\libswscale;D:\dev\GitHub\ffmpeg\libswresample;D:\dev\GitHub\ffmpeg\libavutil;D:\dev\GitHub\ffmpeg\libavfilter;D:\dev\GitHub\ffmpeg\libavdevice;D:\dev\GitHub\ffmpeg\libavcodec;$(LibraryPath)</LibraryPath>
+    <LibraryPath>D:\dev\boost_1_58_0\stage\lib;D:\dev\GitHub\ffmpeg\libpostproc;D:\dev\GitHub\ffmpeg\libavformat;D:\dev\GitHub\ffmpeg\libswscale;D:\dev\GitHub\ffmpeg\libswresample;D:\dev\GitHub\ffmpeg\libavutil;D:\dev\GitHub\ffmpeg\libavfilter;D:\dev\GitHub\ffmpeg\libavdevice;D:\dev\GitHub\ffmpeg\libavcodec;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>D:/dev/boost_1_58_0;D:\dev\GitHub\FFmpeg;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\dev\boost_1_58_0\lib\x64\lib;D:\dev\boost_1_58_0\stage\lib;D:\dev\GitHub\ffmpeg\libavformat;D:\dev\GitHub\ffmpeg\libswscale;D:\dev\GitHub\ffmpeg\libswresample;D:\dev\GitHub\ffmpeg\libavutil;D:\dev\GitHub\ffmpeg\libavfilter;D:\dev\GitHub\ffmpeg\libavdevice;D:\dev\GitHub\ffmpeg\libavcodec;$(LibraryPath)</LibraryPath>
+    <LibraryPath>D:\dev\boost_1_58_0\lib\x64\lib;D:\dev\GitHub\ffmpeg\libpostproc;D:\dev\GitHub\ffmpeg\libavformat;D:\dev\GitHub\ffmpeg\libswscale;D:\dev\GitHub\ffmpeg\libswresample;D:\dev\GitHub\ffmpeg\libavutil;D:\dev\GitHub\ffmpeg\libavfilter;D:\dev\GitHub\ffmpeg\libavdevice;D:\dev\GitHub\ffmpeg\libavcodec;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>D:/dev/boost_1_58_0;D:\dev\GitHub\FFmpeg;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\dev\boost_1_58_0\stage\lib;D:\dev\GitHub\ffmpeg\libavformat;D:\dev\GitHub\ffmpeg\libswscale;D:\dev\GitHub\ffmpeg\libswresample;D:\dev\GitHub\ffmpeg\libavutil;D:\dev\GitHub\ffmpeg\libavfilter;D:\dev\GitHub\ffmpeg\libavdevice;D:\dev\GitHub\ffmpeg\libavcodec;$(LibraryPath)</LibraryPath>
+    <LibraryPath>D:\dev\boost_1_58_0\stage\lib;D:\dev\GitHub\ffmpeg\libpostproc;D:\dev\GitHub\ffmpeg\libavformat;D:\dev\GitHub\ffmpeg\libswscale;D:\dev\GitHub\ffmpeg\libswresample;D:\dev\GitHub\ffmpeg\libavutil;D:\dev\GitHub\ffmpeg\libavfilter;D:\dev\GitHub\ffmpeg\libavdevice;D:\dev\GitHub\ffmpeg\libavcodec;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>D:/dev/boost_1_58_0;D:\dev\GitHub\FFmpeg;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\dev\boost_1_58_0\lib\x64\lib;D:\dev\boost_1_58_0\stage\lib;D:\dev\GitHub\ffmpeg\libavformat;D:\dev\GitHub\ffmpeg\libswscale;D:\dev\GitHub\ffmpeg\libswresample;D:\dev\GitHub\ffmpeg\libavutil;D:\dev\GitHub\ffmpeg\libavfilter;D:\dev\GitHub\ffmpeg\libavdevice;D:\dev\GitHub\ffmpeg\libavcodec;$(LibraryPath)</LibraryPath>
+    <LibraryPath>D:\dev\boost_1_58_0\lib\x64\lib;D:\dev\GitHub\ffmpeg\libpostproc;D:\dev\GitHub\ffmpeg\libavformat;D:\dev\GitHub\ffmpeg\libswscale;D:\dev\GitHub\ffmpeg\libswresample;D:\dev\GitHub\ffmpeg\libavutil;D:\dev\GitHub\ffmpeg\libavfilter;D:\dev\GitHub\ffmpeg\libavdevice;D:\dev\GitHub\ffmpeg\libavcodec;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -4,7 +4,7 @@
 #include <Windows.h>
 #include <stdexcept>
 
-#define STREAMPLAYER_API extern "C" __declspec(dllexport)
+#define STREAMPLAYER_API extern "C"
 
 FFmpeg::Facade::StreamPlayer player;
 
@@ -35,20 +35,6 @@ STREAMPLAYER_API int32_t __stdcall StartPlay(const char* url)
 
     return 0;
 }
-
-/*STREAMPLAYER_API int32_t __stdcall Play()
-{
-    try
-    {
-        player.Play();
-    }
-    catch (std::runtime_error &)
-    {
-        return 1;
-    }
-
-    return 0;
-}*/
 
 STREAMPLAYER_API int32_t __stdcall GetCurrentFrame(uint8_t** bmp_ptr)
 {

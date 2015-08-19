@@ -9,18 +9,32 @@ using Size = System.Windows.Size;
 
 namespace WebEye
 {
+    /// <summary>
+    /// Represents the exception thrown when the stream player fails.
+    /// </summary>
     public sealed class StreamPlayerException : Exception
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StreamPlayerException"/> class.
+        /// </summary>
+        /// <param name="message">
+        /// The message.
+        /// </param>
         internal StreamPlayerException(string message)
-            : base(message) { }
+            : base(message)
+        {
+        }
     }
 
+    /// <summary>
+    /// Forwards calls to the stream player library.
+    /// </summary>
     internal sealed class StreamPlayerProxy : IDisposable
     {
         /// <summary>
-        /// Initializes a new instance of the StreamPlayerProxy class.
+        /// Initializes a new instance of the <see cref="StreamPlayerProxy"/> class.
         /// </summary>
-        /// <exception cref="Win32Exception">Failed to load the utilities dll.</exception>
+        /// <exception cref="Win32Exception">Failed to load the stream player library.</exception>
         internal StreamPlayerProxy()
         {
             LoadDll();
@@ -51,17 +65,6 @@ namespace WebEye
                 throw new StreamPlayerException("Failed to play the stream.");
             }
         }
-
-        /// <summary>
-        /// Plays the stream opened by the Open method.
-        /// </summary>
-        /*internal void Play()
-        {
-            if (_play() != 0)
-            {
-                throw new StreamPlayerException("Failed to play the stream.");
-            }
-        }*/
 
         /// <summary>
         /// Stops a stream.
@@ -142,9 +145,9 @@ namespace WebEye
         }
 
         /// <summary>
-        /// Retrieves the unstretched frame size.
+        /// Retrieves the frame size.
         /// </summary>
-        /// <returns>The unstretched frame size.</returns>
+        /// <returns>The frame size.</returns>
         internal Size GetFrameSize()
         {
             Int32 width, height;
@@ -171,6 +174,11 @@ namespace WebEye
                  File.Delete(_dllFile);
             }
         }
+
+        private Boolean IsX86Platform
+        {
+            get { return IntPtr.Size == 4; }
+        }
         
         [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr LoadLibrary(String lpFileName);
@@ -186,7 +194,8 @@ namespace WebEye
             {
                 using (var writer = new BinaryWriter(stream))
                 {
-                    writer.Write(Resources.StreamPlayer);
+                    writer.Write(IsX86Platform ?
+                        Resources.StreamPlayer : Resources.StreamPlayer64);
                 }
             }
 
@@ -209,10 +218,6 @@ namespace WebEye
             IntPtr pProcPtr = GetProcAddress(hDll, "Initialize");
             _initialize =
                 (InitializeDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(InitializeDelegate));
-
-            //pProcPtr = GetProcAddress(hDll, "Open");
-            //_open =
-            //    (OpenDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(OpenDelegate));
 
             pProcPtr = GetProcAddress(hDll, "StartPlay");
             _startPlayDelegate =
@@ -242,9 +247,6 @@ namespace WebEye
         private delegate Int32 StartPlayDelegate([MarshalAs(UnmanagedType.LPStr)]String url);
         private StartPlayDelegate _startPlayDelegate;
 
-        //private delegate Int32 PlayDelegate();
-        //private PlayDelegate _play;
-
         private delegate Int32 GetCurrentFrameDelegate([Out] out IntPtr dibPtr);
         private GetCurrentFrameDelegate _getCurrentFrame;
 
@@ -261,4 +263,3 @@ namespace WebEye
         private IntPtr _hDll = IntPtr.Zero;
     }
 }
-

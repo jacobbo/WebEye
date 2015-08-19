@@ -69,5 +69,15 @@ namespace WebEye.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] StreamPlayer64 {
+            get {
+                object obj = ResourceManager.GetObject("StreamPlayer64", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

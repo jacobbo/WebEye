@@ -4,6 +4,9 @@ using System.Windows.Interop;
 
 namespace WebEye
 {
+    /// <summary>
+    /// Hosts a Win32 window used to output frames.
+    /// </summary>
     internal class VideoWindow : HwndHost
     {
         #region WinAPI Interop

@@ -43,20 +43,12 @@ namespace WebEye
         /// <exception cref="StreamPlayerException">Failed to play the stream.</exception>
         public void StartPlay(Uri uri)
         {
-            //if (string.IsNullOrWhiteSpace(url))
-            //{
-            //    throw new ArgumentException("url");
-            //}
-
             if (IsPlaying)
             {
                 Stop();
             }
 
             Player.StartPlay(uri.ToString());
-            //Player.Play();
-
-            //IsPlaying = true;
         }
 
         /// <summary>
