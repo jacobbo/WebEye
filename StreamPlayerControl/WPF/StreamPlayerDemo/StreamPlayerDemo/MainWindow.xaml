@@ -1,7 +1,7 @@
 ﻿<Window x:Class="StreamPlayerDemo.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:webEye="clr-namespace:WebEye;assembly=StreamPlayerControl"
+        xmlns:webEye="clr-namespace:WebEye;assembly=WebEye.StreamPlayerControl"
         Title="MainWindow" Height="400" Width="600">
     <Grid>
             <Grid.RowDefinitions>

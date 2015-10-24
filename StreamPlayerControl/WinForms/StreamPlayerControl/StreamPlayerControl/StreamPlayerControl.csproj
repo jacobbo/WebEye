@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WebEye</RootNamespace>
-    <AssemblyName>StreamPlayerControl</AssemblyName>
+    <AssemblyName>WebEye.StreamPlayerControl</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
