@@ -30,8 +30,8 @@ namespace FFmpeg
 #pragma warning( pop )
 
 	// The FFmpeg framework built using the following configuration:
-	// ./configure --toolchain=msvc --enable-gpl --enable-static --disable-shared --disable-ffmpeg
-	// --disable-ffplay --disable-ffprobe --disable-ffserver --arch=i386
+	// x64: ./configure --toolchain=msvc --arch=amd64 --target-os=win64 --enable-version3 --enable-static --disable-shared --disable-programs --disable-doc
+    // x86: ./configure --toolchain=msvc --arch=i386 --enable-version3 --enable-static --disable-shared --disable-programs --disable-doc 
 
 #pragma comment(lib, "libavformat.a")
 #pragma comment(lib, "libavcodec.a")
