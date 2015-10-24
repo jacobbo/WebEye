@@ -46,7 +46,7 @@
             this.streamPlayerControl1.TabIndex = 0;
             this.streamPlayerControl1.StreamStarted += new System.EventHandler(this.HandlePlayerEvent);
             this.streamPlayerControl1.StreamStopped += new System.EventHandler(this.HandlePlayerEvent);
-            this.streamPlayerControl1.StreamFailed += new System.EventHandler(this.HandlePlayerEvent);
+            this.streamPlayerControl1.StreamFailed += new System.EventHandler(this.HandleStreamFailed);
             // 
             // _urlTextBox
             // 

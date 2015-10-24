@@ -1,6 +1,7 @@
 #include "decoder.h"
 #include <stdexcept>
 
+#include "streamplayer.h"
 #include "frame.h"
 
 using namespace std;
@@ -73,16 +74,18 @@ Decoder::Decoder(string const& streamUrl)
 	}	
 }
 
-void Decoder::GetNextFrame(std::unique_ptr<Frame>& framePtr)
+void Decoder::GetNextFrame(std::unique_ptr<Frame>& framePtr, const StreamPlayer &player)
 {
 	AVFrame *avframePtr = av_frame_alloc();
 	AVPacket packet;
 
-	for (;;)
+    while (!player.IsStopRequested())
 	{
 		int error = av_read_frame(formatCtxPtr_, &packet);
 		if (error < 0)
 		{
+            framePtr.reset();
+
 			if (error != static_cast<int>(AVERROR_EOF))
 			{
 				throw runtime_error("av_read_frame() failed: " + AvStrError(error));
@@ -95,7 +98,12 @@ void Decoder::GetNextFrame(std::unique_ptr<Frame>& framePtr)
 		if (packet.stream_index == videoStreamIndex_)
 		{
 			int frameFinished = 0;			
-			avcodec_decode_video2(codecCtxPtr_, avframePtr, &frameFinished, &packet);
+			int bytesUsed = avcodec_decode_video2(codecCtxPtr_, avframePtr, &frameFinished, &packet);
+            if (bytesUsed < 0)
+            {
+                av_free_packet(&packet);
+                throw runtime_error("avcodec_decode_video2() failed: " + AvStrError(bytesUsed));
+            }
 
 			if (frameFinished != 0)
 			{

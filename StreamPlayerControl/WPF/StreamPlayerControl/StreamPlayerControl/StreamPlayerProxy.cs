@@ -167,6 +167,7 @@ namespace WebEye
             if (_hDll != IntPtr.Zero)
             {
                 FreeLibrary(_hDll);
+                _hDll = IntPtr.Zero;
             }
 
             if (File.Exists(_dllFile))

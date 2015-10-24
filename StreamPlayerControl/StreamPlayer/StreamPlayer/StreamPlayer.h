@@ -86,6 +86,12 @@ namespace FFmpeg
             /// </summary>
             void Uninitialize();
 
+            /// <summary>
+            /// Gets a boolean value indicating whether a client wants to stop the player.
+            /// </summary>
+            /// <returns>A boolean value indicating whether a client wants to stop the player.</returns>
+            bool IsStopRequested() const;
+
         private:
 			/// <summary>
 			/// Plays a stream.

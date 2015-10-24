@@ -43,7 +43,7 @@ void StreamPlayer::Play(string const& streamUrl)
 	boost::unique_lock<boost::mutex> lock(mutex_, boost::defer_lock);
 	if (!lock.try_lock())
 	{
-		// Skip subsequent calls until a stream fails or stopped.  
+		// Skip subsequent calls until the stream fails or stopped.  
 		return;
 	}
 
@@ -58,9 +58,9 @@ void StreamPlayer::Play(string const& streamUrl)
 		
 		for (;;)
 		{
-			decoder.GetNextFrame(framePtr_);
+			decoder.GetNextFrame(framePtr_, *this);
 
-			if (stopRequested_ || framePtr_ == nullptr)
+			if (IsStopRequested() || framePtr_ == nullptr)
 			{
 				::PostMessage(playerParams_.window, WM_STREAMSTOPPED, 0, 0);
 				break;
@@ -186,4 +186,9 @@ void StreamPlayer::RaiseStreamFailedEvent()
 {
     if (playerParams_.streamFailedCallback != nullptr)
         playerParams_.streamFailedCallback();
+}
+
+bool StreamPlayer::IsStopRequested() const
+{
+    return stopRequested_;
 }

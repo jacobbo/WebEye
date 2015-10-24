@@ -47,6 +47,7 @@ namespace FFmpeg
 
 	namespace Facade
 	{
+        class StreamPlayer;
 		class Frame;
 
 		/// <summary>
@@ -65,7 +66,7 @@ namespace FFmpeg
 			/// Gets the next frame in a stream.
 			/// </summary>
 			/// <param name="framePtr">The next frame in a stream.</param>
-			void GetNextFrame(std::unique_ptr<Frame>& framePtr);
+			void GetNextFrame(std::unique_ptr<Frame>& framePtr, const StreamPlayer &player);
 
 			/// <summary>
 			/// Gets an interframe delay, in milliseconds.

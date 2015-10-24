@@ -42,5 +42,13 @@ namespace WindowsFormsApplication1
         {
             UpdateButtons();
         }
+
+        private void HandleStreamFailed(object sender, EventArgs e)
+        {
+            UpdateButtons();
+
+            MessageBox.Show(_urlTextBox.Text,
+                "Stream Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 }
