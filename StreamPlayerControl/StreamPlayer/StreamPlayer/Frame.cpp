@@ -1,6 +1,13 @@
 #include "frame.h"
 #include <cassert>
-#include <boost/thread/locks.hpp>
+
+#pragma warning( push )
+#pragma warning( disable : 4100 )
+
+#include <boost/thread.hpp>
+
+#pragma warning( pop )
+
 #include <Objbase.h>
 
 using namespace std;
@@ -8,18 +15,20 @@ using namespace boost;
 using namespace FFmpeg;
 using namespace FFmpeg::Facade;
 
-Frame::Frame(uint32_t width, uint32_t height, AVPicture &avPicture)
-    : width_(width), height_(height)
+Frame::Frame(uint32_t width, uint32_t height,
+    int32_t interframeDelayInMilliseconds, AVPicture &avPicture)
+    : width_(width), height_(height),
+    interframeDelayInMilliseconds_(interframeDelayInMilliseconds)
 {
     int32_t lineSize = avPicture.linesize[0];
     uint32_t padding = GetPadding(lineSize);
 
     pixelsPtr_ = new uint8_t[height_ * (lineSize + padding)];
 
-    Update(avPicture);
+    Update(avPicture, interframeDelayInMilliseconds_);
 }
 
-void Frame::Update(AVPicture &avPicture)
+void Frame::Update(AVPicture &avPicture, int32_t interframeDelayInMilliseconds)
 {
     unique_lock<mutex> lock(mutex_);
 
@@ -33,13 +42,15 @@ void Frame::Update(AVPicture &avPicture)
 
         ::SecureZeroMemory(pixelsPtr_ + (lineSize + padding) * y + lineSize, padding);
     }
+
+    interframeDelayInMilliseconds_ = interframeDelayInMilliseconds;
 }
 
 void Frame::Draw(HWND window)
 {
-    unique_lock<mutex> lock(mutex_);
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(interframeDelayInMilliseconds_));
 
-    PAINTSTRUCT ps;
+    unique_lock<mutex> lock(mutex_);  
 
     RECT rc = { 0, 0, 0, 0 };
     ::GetClientRect(window, &rc);
@@ -53,6 +64,7 @@ void Frame::Draw(HWND window)
     bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bmpInfo.bmiHeader.biCompression = BI_RGB;
 
+    PAINTSTRUCT ps;
     HDC hdc = ::BeginPaint(window, &ps);
     assert(hdc != nullptr);
 
@@ -60,7 +72,7 @@ void Frame::Draw(HWND window)
     ::StretchDIBits(hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
         0, 0, width_, height_, pixelsPtr_, &bmpInfo, DIB_RGB_COLORS, SRCCOPY);
 
-    ::EndPaint(window, &ps);
+    ::EndPaint(window, &ps);    
 }
 
 void Frame::ToBmp(uint8_t **bmpPtr)

@@ -130,10 +130,10 @@ void Decoder::GetNextFrame(std::unique_ptr<Frame>& framePtr, const StreamPlayer 
 				if (framePtr == nullptr)
 				{
 					framePtr = make_unique<Frame>(codecCtxPtr_->width,
-						codecCtxPtr_->height, avRgbFrame);
+                        codecCtxPtr_->height, InterframeDelayInMilliseconds(), avRgbFrame);
 				}
 				else
-					framePtr->Update(avRgbFrame);
+                    framePtr->Update(avRgbFrame, InterframeDelayInMilliseconds());
 
 				avpicture_free(&avRgbFrame);
 				av_frame_free(&avframePtr);

@@ -44,6 +44,7 @@ namespace FFmpeg
 #pragma comment(lib, "WS2_32.lib")
 #pragma comment(lib, "strmiids.lib")
 #pragma comment(lib, "Vfw32.lib")
+#pragma comment(lib, "Shlwapi.lib")
 
 	namespace Facade
 	{

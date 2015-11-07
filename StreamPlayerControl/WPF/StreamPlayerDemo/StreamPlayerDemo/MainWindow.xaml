@@ -9,31 +9,35 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <webEye:StreamPlayerControl x:Name="streamPlayerControl"
+            <webEye:StreamPlayerControl x:Name="_streamPlayerControl"
                                         StreamFailed="HandlePlayerEvent"
                                         StreamStarted="HandlePlayerEvent"
                                         StreamStopped="HandlePlayerEvent"/>
 
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8*"/>
+                    <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            </Grid.ColumnDefinitions>
 
                 <TextBox x:Name="_urlTextBox"
-                     Text="rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov"/>
-                <Button Grid.Column="1"
+                     Text="rtsp://localhost:8554/stream"/>
+                <TextBox x:Name="_statusLabel"
+                       Grid.Column="1"
+                         IsEnabled="False"/>
+                <Button Grid.Column="2"
                     Content=" Play "
                     x:Name="_playButton"
                     Click="HandlePlayButtonClick"/>
-                <Button Grid.Column="2"
+                <Button Grid.Column="3"
                     Content=" Stop "
                     x:Name="_stopButton"
                         IsEnabled="False"
                     Click="HandleStopButtonClick"/>
-                <Button Grid.Column="3"
+                <Button Grid.Column="4"
                     Content=" Image... "
                     x:Name="_imageButton"
                         IsEnabled="False"

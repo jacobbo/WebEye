@@ -27,6 +27,11 @@ void StreamPlayer::Initialize(StreamPlayerParams params)
     
     playerParams_ = params;
 
+    if (playerParams_.window == nullptr)
+    {
+        return;
+    }
+
     ::SetWindowLongPtr(playerParams_.window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 
     originalWndProc_ = reinterpret_cast<WNDPROC>(::SetWindowLongPtr(playerParams_.window, GWLP_WNDPROC,
@@ -62,26 +67,36 @@ void StreamPlayer::Play(string const& streamUrl)
 
 			if (IsStopRequested() || framePtr_ == nullptr)
 			{
-				::PostMessage(playerParams_.window, WM_STREAMSTOPPED, 0, 0);
+                if (playerParams_.window != nullptr)
+                { 
+				    ::PostMessage(playerParams_.window, WM_STREAMSTOPPED, 0, 0);
+                }
 				break;
 			}
 
-			::PostMessage(playerParams_.window, WM_INVALIDATE, 0, 0);
-
-			const auto millisecondsToWait = decoder.InterframeDelayInMilliseconds();
-			boost::this_thread::sleep_for(boost::chrono::milliseconds(millisecondsToWait));
+            if (playerParams_.window != nullptr)
+            {
+                ::PostMessage(playerParams_.window, WM_INVALIDATE, 0, 0);
+            }
 
 			if (firstFrame)
 			{
-				::PostMessage(playerParams_.window, WM_STREAMSTARTED, 0, 0);
-				firstFrame = false;
+                if (playerParams_.window != nullptr)
+                {
+                    ::PostMessage(playerParams_.window, WM_STREAMSTARTED, 0, 0);
+                }
+                
+                firstFrame = false;
 			}
 		}
 	}
 	catch (runtime_error&)
 	{
-		::PostMessage(playerParams_.window, WM_STREAMFAILED, 0, 0);
-	}
+        if (playerParams_.window != nullptr)
+        {
+            ::PostMessage(playerParams_.window, WM_STREAMFAILED, 0, 0);
+        }
+    }
 }
 
 void StreamPlayer::Stop()
