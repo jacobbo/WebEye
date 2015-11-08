@@ -14,6 +14,7 @@ namespace WindowsFormsApplication1
         {
             var uri = new Uri(_urlTextBox.Text);
             streamPlayerControl1.StartPlay(uri);
+            _statusTextBox.Text = "Connecting...";
         }
 
         private void stopButton_Click(object sender, EventArgs e)
@@ -38,17 +39,25 @@ namespace WindowsFormsApplication1
             _imageButton.Enabled = streamPlayerControl1.IsPlaying;
         }
 
-        private void HandlePlayerEvent(object sender, EventArgs e)
+        private void HandleStreamStartedEvent(object sender, EventArgs e)
         {
             UpdateButtons();
+
+            _statusTextBox.Text = "Playing";
         }
 
-        private void HandleStreamFailed(object sender, EventArgs e)
+        private void HandleStreamFailedEvent(object sender, EventArgs e)
         {
             UpdateButtons();
 
-            MessageBox.Show(_urlTextBox.Text,
-                "Stream Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            _statusTextBox.Text = "Failed";
+        }
+
+        private void HandleStreamStoppedEvent(object sender, EventArgs e)
+        {
+            UpdateButtons();
+
+            _statusTextBox.Text = "Stopped";
         }
     }
 }

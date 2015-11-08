@@ -174,7 +174,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Decoder.cpp" />
+    <ClCompile Include="Stream.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Frame.cpp" />
     <ClCompile Include="StreamPlayer.cpp" />
@@ -184,7 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConcurrentQueue.h" />
-    <ClInclude Include="Decoder.h" />
+    <ClInclude Include="Stream.h" />
     <ClInclude Include="Frame.h" />
     <ClInclude Include="StreamPlayer.h" />
   </ItemGroup>

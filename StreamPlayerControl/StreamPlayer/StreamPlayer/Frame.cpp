@@ -1,39 +1,20 @@
 #include "frame.h"
 #include <cassert>
 
-#pragma warning( push )
-#pragma warning( disable : 4100 )
-
-#include <boost/thread.hpp>
-
-#pragma warning( pop )
 
 #include <Objbase.h>
 
 using namespace std;
-using namespace boost;
 using namespace FFmpeg;
 using namespace FFmpeg::Facade;
 
-Frame::Frame(uint32_t width, uint32_t height,
-    int32_t interframeDelayInMilliseconds, AVPicture &avPicture)
-    : width_(width), height_(height),
-    interframeDelayInMilliseconds_(interframeDelayInMilliseconds)
+Frame::Frame(uint32_t width, uint32_t height, AVPicture &avPicture)
+    : width_(width), height_(height)
 {
     int32_t lineSize = avPicture.linesize[0];
     uint32_t padding = GetPadding(lineSize);
 
     pixelsPtr_ = new uint8_t[height_ * (lineSize + padding)];
-
-    Update(avPicture, interframeDelayInMilliseconds_);
-}
-
-void Frame::Update(AVPicture &avPicture, int32_t interframeDelayInMilliseconds)
-{
-    unique_lock<mutex> lock(mutex_);
-
-    int32_t lineSize = avPicture.linesize[0];
-    uint32_t padding = GetPadding(lineSize);
 
     for (int32_t y = 0; y < height_; ++y)
     {
@@ -42,16 +23,10 @@ void Frame::Update(AVPicture &avPicture, int32_t interframeDelayInMilliseconds)
 
         ::SecureZeroMemory(pixelsPtr_ + (lineSize + padding) * y + lineSize, padding);
     }
-
-    interframeDelayInMilliseconds_ = interframeDelayInMilliseconds;
 }
 
 void Frame::Draw(HWND window)
 {
-    boost::this_thread::sleep_for(boost::chrono::milliseconds(interframeDelayInMilliseconds_));
-
-    unique_lock<mutex> lock(mutex_);  
-
     RECT rc = { 0, 0, 0, 0 };
     ::GetClientRect(window, &rc);
 
@@ -79,7 +54,8 @@ void Frame::ToBmp(uint8_t **bmpPtr)
 {
     assert(bmpPtr != nullptr);
 
-    unique_lock<mutex> lock(mutex_);
+    if (bmpPtr == nullptr)
+        throw runtime_error("invalid argument");
 
     *bmpPtr =
         static_cast<uint8_t *>(::CoTaskMemAlloc(sizeof(BITMAPINFOHEADER) + height_ * width_ * 3));

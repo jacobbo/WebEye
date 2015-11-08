@@ -1,8 +1,6 @@
 #include "streamplayer.h"
 #include <cassert>
 
-#include "decoder.h"
-
 #define WM_INVALIDATE    WM_USER + 1
 #define WM_STREAMSTARTED WM_USER + 2
 #define WM_STREAMSTOPPED WM_USER + 3
@@ -45,7 +43,7 @@ void StreamPlayer::StartPlay(string const& streamUrl)
 
 void StreamPlayer::Play(string const& streamUrl)
 {
-	boost::unique_lock<boost::mutex> lock(mutex_, boost::defer_lock);
+    boost::unique_lock<boost::mutex> lock(workerThreadMutex_, boost::defer_lock);
 	if (!lock.try_lock())
 	{
 		// Skip subsequent calls until the stream fails or stopped.  
@@ -54,7 +52,10 @@ void StreamPlayer::Play(string const& streamUrl)
 
 	try
 	{
-		Decoder decoder(streamUrl);
+        {
+            unique_lock<mutex> lock(streamMutex_);
+            streamPtr_ = make_unique<Stream>(streamUrl);
+        }
 
 		stopRequested_ = false;
 		bool firstFrame = true;
@@ -63,16 +64,22 @@ void StreamPlayer::Play(string const& streamUrl)
 		
 		for (;;)
 		{
-			decoder.GetNextFrame(framePtr_, *this);
+            unique_ptr<Frame> framePtr = streamPtr_->GetNextFrame();
 
-			if (IsStopRequested() || framePtr_ == nullptr)
+			if (stopRequested_ || framePtr == nullptr)
 			{
                 if (playerParams_.window != nullptr)
                 { 
 				    ::PostMessage(playerParams_.window, WM_STREAMSTOPPED, 0, 0);
                 }
+
 				break;
 			}
+            else
+            {
+                unique_lock<mutex> lock(frameMutex_);
+                framePtr_.reset(framePtr.release());
+            }
 
             if (playerParams_.window != nullptr)
             {
@@ -88,7 +95,15 @@ void StreamPlayer::Play(string const& streamUrl)
                 
                 firstFrame = false;
 			}
+
+            boost::this_thread::sleep_for(
+                boost::chrono::milliseconds(streamPtr_->InterframeDelayInMilliseconds()));
 		}
+
+        {
+            unique_lock<mutex> lock(streamMutex_);
+            streamPtr_.reset();
+        }
 	}
 	catch (runtime_error&)
 	{
@@ -102,6 +117,14 @@ void StreamPlayer::Play(string const& streamUrl)
 void StreamPlayer::Stop()
 {
     stopRequested_ = true;
+
+    {
+        unique_lock<mutex> lock(streamMutex_);
+        if (streamPtr_ != nullptr)
+        {
+            streamPtr_->Stop();
+        }
+    }
 
     if (workerThread_.joinable())
         workerThread_.join();
@@ -125,6 +148,8 @@ void StreamPlayer::Uninitialize()
 
 void StreamPlayer::DrawFrame()
 {
+    unique_lock<mutex> lock(frameMutex_);
+
     if (framePtr_ != nullptr)
         framePtr_->Draw(playerParams_.window);
 }
@@ -168,6 +193,8 @@ LRESULT APIENTRY StreamPlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 
 void StreamPlayer::GetCurrentFrame(uint8_t **bmpPtr)
 {
+    unique_lock<mutex> lock(frameMutex_);
+
     if (framePtr_ == nullptr)
         throw runtime_error("no frame");
 
@@ -178,8 +205,17 @@ void StreamPlayer::GetFrameSize(uint32_t *widthPtr, uint32_t *heightPtr)
 {
     assert(widthPtr != nullptr && heightPtr != nullptr);
 
+    if (widthPtr == nullptr || heightPtr == nullptr)
+    {
+        throw runtime_error("invalid argument");
+    }
+
+    unique_lock<mutex> lock(frameMutex_);
+
     if (framePtr_ == nullptr)
+    {
         throw runtime_error("no frame");
+    }
 
     *widthPtr = framePtr_->Width();
     *heightPtr = framePtr_->Height();
@@ -187,23 +223,24 @@ void StreamPlayer::GetFrameSize(uint32_t *widthPtr, uint32_t *heightPtr)
 
 void StreamPlayer::RaiseStreamStartedEvent()
 {
-	if (playerParams_.streamStartedCallback != nullptr)
-		playerParams_.streamStartedCallback();
+    if (playerParams_.streamStartedCallback != nullptr)
+    {
+        playerParams_.streamStartedCallback();
+    }
 }
 
 void StreamPlayer::RaiseStreamStoppedEvent()
 {
-	if (playerParams_.streamStoppedCallback != nullptr)
-		playerParams_.streamStoppedCallback();
+    if (playerParams_.streamStoppedCallback != nullptr)
+    {
+        playerParams_.streamStoppedCallback();
+    }
 }
 
 void StreamPlayer::RaiseStreamFailedEvent()
 {
     if (playerParams_.streamFailedCallback != nullptr)
+    {
         playerParams_.streamFailedCallback();
-}
-
-bool StreamPlayer::IsStopRequested() const
-{
-    return stopRequested_;
+    }
 }

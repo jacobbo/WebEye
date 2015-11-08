@@ -33,6 +33,7 @@
             this._playButton = new System.Windows.Forms.Button();
             this._stopButton = new System.Windows.Forms.Button();
             this._imageButton = new System.Windows.Forms.Button();
+            this._statusTextBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // streamPlayerControl1
@@ -44,9 +45,9 @@
             this.streamPlayerControl1.Name = "streamPlayerControl1";
             this.streamPlayerControl1.Size = new System.Drawing.Size(813, 450);
             this.streamPlayerControl1.TabIndex = 0;
-            this.streamPlayerControl1.StreamStarted += new System.EventHandler(this.HandlePlayerEvent);
-            this.streamPlayerControl1.StreamStopped += new System.EventHandler(this.HandlePlayerEvent);
-            this.streamPlayerControl1.StreamFailed += new System.EventHandler(this.HandleStreamFailed);
+            this.streamPlayerControl1.StreamStarted += new System.EventHandler(this.HandleStreamStartedEvent);
+            this.streamPlayerControl1.StreamStopped += new System.EventHandler(this.HandleStreamStoppedEvent);
+            this.streamPlayerControl1.StreamFailed += new System.EventHandler(this.HandleStreamFailedEvent);
             // 
             // _urlTextBox
             // 
@@ -54,7 +55,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this._urlTextBox.Location = new System.Drawing.Point(5, 457);
             this._urlTextBox.Name = "_urlTextBox";
-            this._urlTextBox.Size = new System.Drawing.Size(576, 26);
+            this._urlTextBox.Size = new System.Drawing.Size(466, 26);
             this._urlTextBox.TabIndex = 1;
             this._urlTextBox.Text = "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov";
             // 
@@ -93,11 +94,21 @@
             this._imageButton.UseVisualStyleBackColor = true;
             this._imageButton.Click += new System.EventHandler(this.imageButton_Click);
             // 
+            // _statusTextBox
+            // 
+            this._statusTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this._statusTextBox.Enabled = false;
+            this._statusTextBox.Location = new System.Drawing.Point(477, 457);
+            this._statusTextBox.Name = "_statusTextBox";
+            this._statusTextBox.Size = new System.Drawing.Size(104, 26);
+            this._statusTextBox.TabIndex = 5;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(814, 494);
+            this.Controls.Add(this._statusTextBox);
             this.Controls.Add(this._imageButton);
             this.Controls.Add(this._stopButton);
             this.Controls.Add(this._playButton);
@@ -117,6 +128,7 @@
         private System.Windows.Forms.Button _playButton;
         private System.Windows.Forms.Button _stopButton;
         private System.Windows.Forms.Button _imageButton;
+        private System.Windows.Forms.TextBox _statusTextBox;
     }
 }
 

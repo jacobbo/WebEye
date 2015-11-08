@@ -17,12 +17,15 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include "stream.h"
 #include "frame.h"
 
 namespace FFmpeg
 {
     namespace Facade
     {
+        class Stream;
+
         typedef void(__stdcall *StreamStartedCallback)();
 		typedef void(__stdcall *StreamStoppedCallback)();
         typedef void(__stdcall *StreamFailedCallback)();
@@ -86,12 +89,6 @@ namespace FFmpeg
             /// </summary>
             void Uninitialize();
 
-            /// <summary>
-            /// Gets a boolean value indicating whether a client wants to stop the player.
-            /// </summary>
-            /// <returns>A boolean value indicating whether a client wants to stop the player.</returns>
-            bool IsStopRequested() const;
-
         private:
 			/// <summary>
 			/// Plays a stream.
@@ -126,15 +123,19 @@ namespace FFmpeg
             boost::atomic<bool> stopRequested_;
             StreamPlayerParams playerParams_;
 
+            boost::mutex streamMutex_;
+            std::unique_ptr<Stream> streamPtr_;
+
+            boost::mutex frameMutex_;
             std::unique_ptr<Frame> framePtr_;
 
             // There is a bug in the Visual Studio std::thread implementation,
             // which prohibits dll unloading, that is why the boost::thread is used instead.
             // https://connect.microsoft.com/VisualStudio/feedback/details/781665/stl-using-std-threading-objects-adds-extra-load-count-for-hosted-dll#tabs 
 
-			boost::mutex mutex_;
+            boost::mutex workerThreadMutex_;
 			boost::thread workerThread_;
-            
+           
             static WNDPROC originalWndProc_;
         };
     }

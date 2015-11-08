@@ -24,7 +24,7 @@
             </Grid.ColumnDefinitions>
 
                 <TextBox x:Name="_urlTextBox"
-                     Text="rtsp://localhost:8554/stream"/>
+                     Text="rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov"/>
                 <TextBox x:Name="_statusLabel"
                        Grid.Column="1"
                          IsEnabled="False"/>
