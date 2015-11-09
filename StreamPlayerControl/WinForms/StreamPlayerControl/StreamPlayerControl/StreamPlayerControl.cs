@@ -49,7 +49,7 @@ namespace WebEye
                 Stop();
             }
 
-            Player.StartPlay(uri.ToString());
+            Player.StartPlay(uri.IsFile ? uri.LocalPath : uri.ToString());
         }
 
         /// <summary>

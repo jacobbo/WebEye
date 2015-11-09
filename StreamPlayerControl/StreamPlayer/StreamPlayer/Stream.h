@@ -69,7 +69,7 @@ namespace FFmpeg
 			/// <summary>
 			/// Gets the next frame in the stream.
 			/// </summary>
-			/// <returns>The next frame in the stream or nullptr if there are no more frames.</param>
+			/// <returns>The next frame in the stream or nullptr if there are no more frames.</returns>
             std::unique_ptr<Frame> GetNextFrame();
 
 			/// <summary>
