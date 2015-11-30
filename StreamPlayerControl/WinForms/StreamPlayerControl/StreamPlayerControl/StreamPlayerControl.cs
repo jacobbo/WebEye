@@ -39,17 +39,29 @@ namespace WebEye
         /// Asynchronously plays a stream.
         /// </summary>
         /// <param name="uri">The uri of a stream to play.</param>
-        /// <exception cref="ArgumentException">An invalid string is passed as an argument.</exception>
+        /// <param name="connectionTimeout"></param>
         /// <exception cref="Win32Exception">Failed to load the FFmpeg facade dll.</exception>
         /// <exception cref="StreamPlayerException">Failed to play the stream.</exception>
-        public void StartPlay(Uri uri)
+        public void StartPlay(Uri uri, TimeSpan connectionTimeout)
         {
             if (IsPlaying)
             {
                 Stop();
             }
 
-            Player.StartPlay(uri.IsFile ? uri.LocalPath : uri.ToString());
+            Player.StartPlay(uri.IsFile ? uri.LocalPath : uri.ToString(),
+                Convert.ToInt32(connectionTimeout.TotalMilliseconds));
+        }
+
+        /// <summary>
+        /// Asynchronously plays a stream.
+        /// </summary>
+        /// <param name="uri">The uri of a stream to play.</param>
+        /// <exception cref="Win32Exception">Failed to load the FFmpeg facade dll.</exception>
+        /// <exception cref="StreamPlayerException">Failed to play the stream.</exception>
+        public void StartPlay(Uri uri)
+        {
+            StartPlay(uri, TimeSpan.FromSeconds(5.0));
         }
 
         /// <summary>
@@ -148,6 +160,9 @@ namespace WebEye
         [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
         private delegate void CallbackDelegate();
 
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+        delegate void ErrorCallbackDelegate(string error);
+
         private Delegate _streamStartedCallback;
         private Delegate _streamStoppedCallback;
         private Delegate _streamFailedCallback;
@@ -158,7 +173,7 @@ namespace WebEye
 
             _streamStartedCallback = new CallbackDelegate(RaiseStreamStartedEvent);
             _streamStoppedCallback = new CallbackDelegate(RaiseStreamStoppedEvent);
-            _streamFailedCallback = new CallbackDelegate(RaiseStreamFailedEvent);
+            _streamFailedCallback = new ErrorCallbackDelegate(RaiseStreamFailedEvent);
 
             var playerParams = new StreamPlayerParams
             {
@@ -206,15 +221,15 @@ namespace WebEye
         /// <summary>
         /// Occurs when the player fails to play a stream.
         /// </summary>
-        public event EventHandler StreamFailed;
+        public event EventHandler<StreamFailedEventArgs> StreamFailed;
 
-        private void RaiseStreamFailedEvent()
+        private void RaiseStreamFailedEvent(string error)
         {
             IsPlaying = false;
 
             if (StreamFailed != null)
             {
-                StreamFailed(this, EventArgs.Empty);
+                StreamFailed(this, new StreamFailedEventArgs(error));
             }
         }
     }

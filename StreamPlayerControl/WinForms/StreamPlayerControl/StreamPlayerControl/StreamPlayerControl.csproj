@@ -43,6 +43,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="StreamFailedEventArgs.cs" />
     <Compile Include="StreamPlayerProxy.cs" />
     <Compile Include="StreamPlayerControl.cs">
       <SubType>UserControl</SubType>

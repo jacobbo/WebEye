@@ -34,8 +34,8 @@ namespace FFmpeg
             /// </summary>
             /// <param name="width">The width of the frame, in pixels.</param>
             /// <param name="height">The height of the frame, in pixels.</param>            
-            /// <param name="avPicture">The AVPicture object to initialize the frame with.</param>
-            Frame(uint32_t width, uint32_t height, AVPicture &avPicture);
+            /// <param name="avFrame">The AVFrame object to initialize the frame with.</param>
+            Frame(uint32_t width, uint32_t height, AVFrame &avFrame);
 
             /// <summary>
             /// Gets the width of the frame, in pixels.

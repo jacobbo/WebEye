@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <memory>
+#include <chrono>
 #include <boost/noncopyable.hpp>
 
 #pragma warning( push )
@@ -29,6 +30,7 @@ namespace FFmpeg
 #include <libavcodec/avcodec.h>
 #include <libavdevice/avdevice.h>
 #include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
 	}
 
 #pragma warning( pop )
@@ -49,6 +51,7 @@ namespace FFmpeg
 #pragma comment(lib, "strmiids.lib")
 #pragma comment(lib, "Vfw32.lib")
 #pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "Secur32.lib")
 
 	namespace Facade
 	{
@@ -64,7 +67,9 @@ namespace FFmpeg
 			/// Initializes a new instance of the Stream class.
 			/// </summary>
 			/// <param name="streamUrl">The url of a stream to decode.</param>
-            Stream(std::string const& streamUrl);
+            /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
+            Stream(std::string const& streamUrl,
+                int32_t connectionTimeoutInMilliseconds);
 
 			/// <summary>
 			/// Gets the next frame in the stream.
@@ -86,8 +91,17 @@ namespace FFmpeg
 
 		private:
 
+            void Open(std::string const& streamUrl);
+
+            void Read();
+
+            void OpenAndRead(std::string const& streamUrl);
+
+            static int InterruptCallback(void *ctx);
+
 			static std::string AvStrError(int errnum);
-			
+
+            std::chrono::milliseconds connectionTimeout_;
             boost::atomic<bool> stopRequested_;
 
 			AVFormatContext *formatCtxPtr_;
@@ -103,7 +117,7 @@ namespace FFmpeg
 
             ConcurrentQueue<AVPacket *> packetQueue_;
 
-            void OpenAndReadPackets(std::string const& streamUrl);
+            std::chrono::time_point<std::chrono::system_clock> connectionStart_;            
 		};
 	}
 }

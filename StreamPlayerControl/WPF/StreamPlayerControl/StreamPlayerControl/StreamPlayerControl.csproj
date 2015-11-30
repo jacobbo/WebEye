@@ -52,6 +52,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="StreamFailedEventArgs.cs" />
     <Compile Include="StreamPlayerProxy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StreamPlayerControl.xaml.cs">
@@ -72,10 +73,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\StreamPlayer64.dll" />
+    <None Include="Resources\StreamPlayer.dll" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\StreamPlayer.dll" />
+    <None Include="Resources\StreamPlayer64.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

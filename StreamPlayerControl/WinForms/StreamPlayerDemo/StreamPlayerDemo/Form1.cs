@@ -3,6 +3,8 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
+    using WebEye;
+
     public partial class Form1 : Form
     {
         public Form1()
@@ -13,7 +15,7 @@ namespace WindowsFormsApplication1
         private void playButton_Click(object sender, EventArgs e)
         {
             var uri = new Uri(_urlTextBox.Text);
-            streamPlayerControl1.StartPlay(uri);
+            streamPlayerControl1.StartPlay(uri, TimeSpan.FromSeconds(15.0));
             _statusTextBox.Text = "Connecting...";
         }
 
@@ -46,11 +48,14 @@ namespace WindowsFormsApplication1
             _statusTextBox.Text = "Playing";
         }
 
-        private void HandleStreamFailedEvent(object sender, EventArgs e)
+        private void HandleStreamFailedEvent(object sender, StreamFailedEventArgs e)
         {
             UpdateButtons();
 
             _statusTextBox.Text = "Failed";
+
+            MessageBox.Show(e.Error, "Stream Player Demo",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void HandleStreamStoppedEvent(object sender, EventArgs e)

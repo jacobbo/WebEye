@@ -36,12 +36,15 @@ void StreamPlayer::Initialize(StreamPlayerParams params)
         reinterpret_cast<LONG_PTR>(WndProc)));
 }
 
-void StreamPlayer::StartPlay(string const& streamUrl)
+void StreamPlayer::StartPlay(string const& streamUrl,
+    uint32_t connectionTimeoutInMilliseconds)
 {
-	workerThread_ = boost::thread(&StreamPlayer::Play, this, streamUrl);
+	workerThread_ = boost::thread(&StreamPlayer::Play, this,
+        streamUrl, connectionTimeoutInMilliseconds);
 }
 
-void StreamPlayer::Play(string const& streamUrl)
+void StreamPlayer::Play(string const& streamUrl,
+    int32_t connectionTimeoutInMilliseconds)
 {
     boost::unique_lock<boost::mutex> lock(workerThreadMutex_, boost::defer_lock);
 	if (!lock.try_lock())
@@ -54,7 +57,7 @@ void StreamPlayer::Play(string const& streamUrl)
 	{
         {
             unique_lock<mutex> lock(streamMutex_);
-            streamPtr_ = make_unique<Stream>(streamUrl);
+            streamPtr_ = make_unique<Stream>(streamUrl, connectionTimeoutInMilliseconds);
         }
 
 		stopRequested_ = false;
@@ -105,8 +108,13 @@ void StreamPlayer::Play(string const& streamUrl)
             streamPtr_.reset();
         }
 	}
-	catch (runtime_error&)
+	catch (runtime_error& e)
 	{
+        {
+            unique_lock<mutex> lock(errorMutex_);
+            error_ = e.what();
+        }
+
         if (playerParams_.window != nullptr)
         {
             ::PostMessage(playerParams_.window, WM_STREAMFAILED, 0, 0);
@@ -241,6 +249,6 @@ void StreamPlayer::RaiseStreamFailedEvent()
 {
     if (playerParams_.streamFailedCallback != nullptr)
     {
-        playerParams_.streamFailedCallback();
+        playerParams_.streamFailedCallback(error_.c_str());
     }
 }

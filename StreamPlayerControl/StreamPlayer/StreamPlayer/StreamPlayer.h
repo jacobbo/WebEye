@@ -28,7 +28,7 @@ namespace FFmpeg
 
         typedef void(__stdcall *StreamStartedCallback)();
 		typedef void(__stdcall *StreamStoppedCallback)();
-        typedef void(__stdcall *StreamFailedCallback)();
+        typedef void(__stdcall *StreamFailedCallback)(const char* error);
 
         struct StreamPlayerParams
         {
@@ -64,7 +64,9 @@ namespace FFmpeg
             /// Asynchronously plays a stream.
             /// </summary>
             /// <param name="streamUrl">The url of a stream to play.</param>
-			void StartPlay(std::string const& streamUrl);
+            /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
+            void StartPlay(std::string const& streamUrl,
+                uint32_t connectionTimeoutInMilliseconds);
 
             /// <summary>
             /// Stops a stream.
@@ -94,7 +96,9 @@ namespace FFmpeg
 			/// Plays a stream.
 			/// </summary>
 			/// <param name="streamUrl">The url of a stream to play.</param>
-			void Play(std::string const& streamUrl);
+            /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
+            void Play(std::string const& streamUrl,
+                int32_t connectionTimeoutInMilliseconds);
 
 			/// <summary>
 			/// Draws a frame.
@@ -135,7 +139,10 @@ namespace FFmpeg
 
             boost::mutex workerThreadMutex_;
 			boost::thread workerThread_;
-           
+
+            boost::mutex errorMutex_;
+            std::string error_;
+          
             static WNDPROC originalWndProc_;
         };
     }

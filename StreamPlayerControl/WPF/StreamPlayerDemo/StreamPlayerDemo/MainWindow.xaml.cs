@@ -17,7 +17,7 @@ namespace StreamPlayerDemo
         private void HandlePlayButtonClick(object sender, RoutedEventArgs e)
         {
             var uri = new Uri(_urlTextBox.Text);
-            _streamPlayerControl.StartPlay(uri);
+            _streamPlayerControl.StartPlay(uri, TimeSpan.FromSeconds(15));
             _statusLabel.Text = "Connecting...";
         }
 
@@ -53,6 +53,12 @@ namespace StreamPlayerDemo
             else if (e.RoutedEvent.Name == "StreamFailed")
             {
                 _statusLabel.Text = "Failed";
+
+                MessageBox.Show(
+                    ((WebEye.StreamFailedEventArgs)e).Error,
+                    "Stream Player Demo",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
             else if (e.RoutedEvent.Name == "StreamStopped")
             {

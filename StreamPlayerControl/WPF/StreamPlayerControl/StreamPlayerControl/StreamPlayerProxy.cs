@@ -53,14 +53,16 @@ namespace WebEye
             }
         }
 
-
         /// <summary>
         /// Asynchronously plays a stream.
         /// </summary>
         /// <param name="url">The url of a stream to play.</param>
-        internal void StartPlay(String url)
+        /// <param name="connectionTimeout">The connection timeout.</param>
+        /// <exception cref="StreamPlayerException">Failed to play the stream.</exception>
+        internal void StartPlay(String url, TimeSpan connectionTimeout)
         {
-            if (_startPlayDelegate(url) != 0)
+            if (_startPlayDelegate(url,
+                Convert.ToInt32(connectionTimeout.TotalMilliseconds)) != 0)
             {
                 throw new StreamPlayerException("Failed to play the stream.");
             }
@@ -245,7 +247,8 @@ namespace WebEye
         private delegate Int32 InitializeDelegate(StreamPlayerControl.StreamPlayerParams playerParams);
         private InitializeDelegate _initialize;
 
-        private delegate Int32 StartPlayDelegate([MarshalAs(UnmanagedType.LPStr)]String url);
+        private delegate Int32 StartPlayDelegate([MarshalAs(UnmanagedType.LPStr)]String url,
+            Int32 connectionTimeout);
         private StartPlayDelegate _startPlayDelegate;
 
         private delegate Int32 GetCurrentFrameDelegate([Out] out IntPtr dibPtr);

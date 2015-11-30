@@ -47,7 +47,7 @@
             this.streamPlayerControl1.TabIndex = 0;
             this.streamPlayerControl1.StreamStarted += new System.EventHandler(this.HandleStreamStartedEvent);
             this.streamPlayerControl1.StreamStopped += new System.EventHandler(this.HandleStreamStoppedEvent);
-            this.streamPlayerControl1.StreamFailed += new System.EventHandler(this.HandleStreamFailedEvent);
+            this.streamPlayerControl1.StreamFailed += new System.EventHandler<WebEye.StreamFailedEventArgs>(this.HandleStreamFailedEvent);
             // 
             // _urlTextBox
             // 

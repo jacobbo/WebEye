@@ -8,10 +8,10 @@ using namespace std;
 using namespace FFmpeg;
 using namespace FFmpeg::Facade;
 
-Frame::Frame(uint32_t width, uint32_t height, AVPicture &avPicture)
+Frame::Frame(uint32_t width, uint32_t height, AVFrame &avFrame)
     : width_(width), height_(height)
 {
-    int32_t lineSize = avPicture.linesize[0];
+    int32_t lineSize = avFrame.linesize[0];
     uint32_t padding = GetPadding(lineSize);
 
     pixelsPtr_ = new uint8_t[height_ * (lineSize + padding)];
@@ -19,7 +19,7 @@ Frame::Frame(uint32_t width, uint32_t height, AVPicture &avPicture)
     for (int32_t y = 0; y < height_; ++y)
     {
         ::CopyMemory(pixelsPtr_ + (lineSize + padding) * y,
-            avPicture.data[0] + (height_ - y - 1) * lineSize, lineSize);
+            avFrame.data[0] + (height_ - y - 1) * lineSize, lineSize);
 
         ::SecureZeroMemory(pixelsPtr_ + (lineSize + padding) * y + lineSize, padding);
     }
