@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace WebEye
+﻿namespace WebEye.Controls.Wpf
 {
+    using System;
+
     public sealed class WebCameraId : IEquatable<WebCameraId>
     {
         /// <summary>
@@ -9,8 +9,8 @@ namespace WebEye
         /// </summary>
         internal WebCameraId(DirectShowProxy.VideoInputDeviceInfo info)
         {
-            Name = info.FriendlyName;
-            DevicePath = info.DevicePath;
+            this.Name = info.FriendlyName;
+            this.DevicePath = info.DevicePath;
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace WebEye
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != typeof(WebCameraId)) return false;
-            return Equals((WebCameraId)obj);
+            return this.Equals((WebCameraId)obj);
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace WebEye
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Equals(other.Name, Name) && Equals(other.DevicePath, DevicePath);
+            return Equals(other.Name, this.Name) && Equals(other.DevicePath, this.DevicePath);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace WebEye
         {
             unchecked
             {
-                return (Name.GetHashCode() * 397) ^ DevicePath.GetHashCode();
+                return (this.Name.GetHashCode() * 397) ^ this.DevicePath.GetHashCode();
             }
         }
 

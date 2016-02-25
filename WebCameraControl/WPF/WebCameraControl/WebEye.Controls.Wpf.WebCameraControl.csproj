@@ -8,8 +8,8 @@
     <ProjectGuid>{9FE79CEF-86C5-4180-9AC1-3CF30BB14FD7}</ProjectGuid>
     <OutputType>library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WebEye</RootNamespace>
-    <AssemblyName>WebCameraControl</AssemblyName>
+    <RootNamespace>WebEye.Controls.Wpf</RootNamespace>
+    <AssemblyName>WebEye.Controls.Wpf.WebCameraControl</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>

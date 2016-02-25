@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>WebEye.Controls.Wpf.WebCameraControl</id>
+    <version>1.0.0.0</version>
+    <authors>Alexander Yakobchuk</authors>
+    <owners>WebEye</owners>
+    <licenseUrl>http://www.codeproject.com/info/cpol10.aspx</licenseUrl>
+    <projectUrl>https://github.com/jacobbo/WebEye/tree/master/WebCameraControl</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/jacobbo/WebEye/master/WebCameraControl/Icon.png</iconUrl>
+    <description>A yet another web camera control. This time without additional dependencies.</description>
+    <copyright>Copyright © WebEye 2016</copyright>
+    <tags>webcam wpf webeye</tags>
+  </metadata>
+  <files>
+      <file src="bin\Release\WebEye.Controls.Wpf.WebCameraControl.dll" target="lib\net40\" />
+	  <file src="bin\Release\WebEye.Controls.Wpf.WebCameraControl.pdb" target="lib\net40\" />
+  </files>  
+</package>

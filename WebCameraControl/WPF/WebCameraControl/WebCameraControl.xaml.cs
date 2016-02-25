@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Windows;
-using Size = System.Drawing.Size;
-
-namespace WebEye
+﻿namespace WebEye.Controls.Wpf
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Drawing;
+    using System.Windows;
+
+    using Size = System.Drawing.Size;
+
     /// <summary>
     /// Interaction logic for WebCameraControl.xaml
     /// </summary>
@@ -16,20 +17,20 @@ namespace WebEye
         {
             InitializeComponent();
 
-            Dispatcher.ShutdownStarted += OnShutdownStarted; 
+            this.Dispatcher.ShutdownStarted += this.OnShutdownStarted; 
         }
 
         private DirectShowProxy _proxy;
 
         private DirectShowProxy Proxy
         {
-            get { return _proxy ?? (_proxy = new DirectShowProxy()); }
+            get { return this._proxy ?? (this._proxy = new DirectShowProxy()); }
         }
 
         private readonly List<WebCameraId> _captureDevices = new List<WebCameraId>();
         private void SaveVideoDevice(ref DirectShowProxy.VideoInputDeviceInfo info)
         {
-            _captureDevices.Add(new WebCameraId(info));
+            this._captureDevices.Add(new WebCameraId(info));
         }
 
         /// <summary>
@@ -38,10 +39,10 @@ namespace WebEye
         /// <exception cref="Win32Exception">Failed to load the DirectShow utilities dll.</exception>
         public IEnumerable<WebCameraId> GetVideoCaptureDevices()
         {
-            _captureDevices.Clear();
-            Proxy.EnumVideoInputDevices(SaveVideoDevice);
+            this._captureDevices.Clear();
+            this.Proxy.EnumVideoInputDevices(this.SaveVideoDevice);
 
-            return new List<WebCameraId>(_captureDevices);
+            return new List<WebCameraId>(this._captureDevices);
         }
 
         /// <summary>
@@ -51,8 +52,8 @@ namespace WebEye
         /// <exception cref="DirectShowException">Failed to setup a capture graph.</exception>
         private void InitializeCaptureGraph()
         {
-            Proxy.BuildCaptureGraph();
-            Proxy.AddRenderFilter(_videoWindow.Handle);
+            this.Proxy.BuildCaptureGraph();
+            this.Proxy.AddRenderFilter(this._videoWindow.Handle);
         }
 
         private static readonly DependencyPropertyKey IsCapturingPropertyKey
@@ -68,8 +69,8 @@ namespace WebEye
         [Browsable(false)]
         public Boolean IsCapturing
         {
-            get { return (Boolean)GetValue(IsCapturingProperty); }
-            private set { SetValue(IsCapturingPropertyKey, value); }
+            get { return (Boolean)this.GetValue(IsCapturingProperty); }
+            private set { this.SetValue(IsCapturingPropertyKey, value); }
         }
 
         private Boolean _captureGraphInitialized;
@@ -89,41 +90,41 @@ namespace WebEye
                 throw new ArgumentNullException();
             }
 
-            if (!_captureGraphInitialized)
+            if (!this._captureGraphInitialized)
             {
-                InitializeCaptureGraph();
+                this.InitializeCaptureGraph();
 
-                _captureGraphInitialized = true;
+                this._captureGraphInitialized = true;
             }
 
-            if (IsCapturing)
+            if (this.IsCapturing)
             {
-                if (_currentCamera == camera)
+                if (this._currentCamera == camera)
                 {
                     return;
                 }
 
-                StopCapture();
+                this.StopCapture();
             }
 
-            if (_currentCamera != null)
+            if (this._currentCamera != null)
             {
-                Proxy.ResetCaptureGraph();
-                _currentCamera = null;
+                this.Proxy.ResetCaptureGraph();
+                this._currentCamera = null;
             }
 
-            Proxy.AddCaptureFilter(camera.DevicePath);
-            _currentCamera = camera;
+            this.Proxy.AddCaptureFilter(camera.DevicePath);
+            this._currentCamera = camera;
 
             try
             {
-                Proxy.Start();
-                IsCapturing = true;
+                this.Proxy.Start();
+                this.IsCapturing = true;
             }
             catch (DirectShowException)
             {
-                Proxy.ResetCaptureGraph();
-                _currentCamera = null;
+                this.Proxy.ResetCaptureGraph();
+                this._currentCamera = null;
                 throw;
             }
         }
@@ -136,12 +137,12 @@ namespace WebEye
         /// <exception cref="DirectShowException">Failed to get the current image.</exception>
         public Bitmap GetCurrentImage()
         {
-            if (!IsCapturing)
+            if (!this.IsCapturing)
             {
                 throw new InvalidOperationException();
             }
 
-            return Proxy.GetCurrentImage();
+            return this.Proxy.GetCurrentImage();
         }
 
         /// <summary>
@@ -150,7 +151,7 @@ namespace WebEye
         [Browsable(false)]
         public Size VideoSize
         {
-            get { return IsCapturing ? Proxy.GetVideoSize() : new Size(0, 0); }
+            get { return this.IsCapturing ? this.Proxy.GetVideoSize() : new Size(0, 0); }
         }
 
         /// <summary>
@@ -160,29 +161,29 @@ namespace WebEye
         /// <exception cref="DirectShowException">Failed to stop a video capture graph.</exception>
         public void StopCapture()
         {
-            if (!IsCapturing)
+            if (!this.IsCapturing)
             {
                 throw new InvalidOperationException();
             }
 
-            Proxy.Stop();
-            IsCapturing = false;
+            this.Proxy.Stop();
+            this.IsCapturing = false;
 
-            Proxy.ResetCaptureGraph();
-            _currentCamera = null;
+            this.Proxy.ResetCaptureGraph();
+            this._currentCamera = null;
         }
 
         private void OnShutdownStarted(object sender, EventArgs eventArgs)
         {
-            if (_proxy != null)
+            if (this._proxy != null)
             {
-                if (IsCapturing)
+                if (this.IsCapturing)
                 {
-                    StopCapture();
+                    this.StopCapture();
                 }
 
-                _proxy.DestroyCaptureGraph();
-                _proxy.Dispose();
+                this._proxy.DestroyCaptureGraph();
+                this._proxy.Dispose();
             }
         }
 

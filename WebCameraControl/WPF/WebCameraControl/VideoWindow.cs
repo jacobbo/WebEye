@@ -1,9 +1,9 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Windows.Interop;
-
-namespace WebEye
+﻿namespace WebEye.Controls.Wpf
 {
+    using System;
+    using System.Runtime.InteropServices;
+    using System.Windows.Interop;
+
     internal class VideoWindow : HwndHost
     {
         #region WinAPI Interop
@@ -23,7 +23,7 @@ namespace WebEye
 
         IntPtr _hWnd = IntPtr.Zero;
 
-        internal new IntPtr Handle { get { return _hWnd; } }
+        internal new IntPtr Handle { get { return this._hWnd; } }
 
         /// <summary>
         /// The CreateWindowEx function creates an overlapped, pop-up, or child window with an extended window style; otherwise, this function is identical to the CreateWindow function. 
@@ -73,11 +73,11 @@ namespace WebEye
             RECT clientArea;
             GetClientRect(hWndParent.Handle, out clientArea);
 
-            _hWnd = CreateWindowEx(0, "Static", "", WindowStyles.WS_CHILD | WindowStyles.WS_VISIBLE,
+            this._hWnd = CreateWindowEx(0, "Static", "", WindowStyles.WS_CHILD | WindowStyles.WS_VISIBLE,
                             0, 0, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top,
                             hWndParent.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
-            return new HandleRef(this, _hWnd);
+            return new HandleRef(this, this._hWnd);
         }
 
         /// <summary>

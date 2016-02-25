@@ -1,10 +1,12 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using Microsoft.Win32;
-using WebEye;
-
-namespace WpfWebCameraDemo
+﻿namespace WpfWebCameraDemo
 {
+    using System.Windows;
+    using System.Windows.Controls;
+
+    using Microsoft.Win32;
+
+    using WebEye.Controls.Wpf;
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
