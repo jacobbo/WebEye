@@ -1,9 +1,10 @@
-﻿using System;
-using System.Windows.Forms;
-using WebEye;
-
-namespace WebCameraDemo
+﻿namespace WebCameraDemo
 {
+    using System;
+    using System.Windows.Forms;
+
+    using WebEye.Controls.WinForms.WebCameraControl;
+
     public partial class Form1 : Form
     {
         public Form1()

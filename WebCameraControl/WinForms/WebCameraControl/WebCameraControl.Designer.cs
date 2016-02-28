@@ -1,4 +1,4 @@
-﻿namespace WebEye
+﻿namespace WebEye.Controls.WinForms.WebCameraControl
 {
     partial class WebCameraControl
     {
@@ -15,7 +15,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
+            this.components = new System.ComponentModel.Container();
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         }
 

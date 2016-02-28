@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace WebEye
+﻿namespace WebEye.Controls.WinForms.WebCameraControl
 {
+    using System;
+
     public sealed class WebCameraId : IEquatable<WebCameraId>
     {
         /// <summary>
@@ -9,8 +9,8 @@ namespace WebEye
         /// </summary>
         internal WebCameraId(DirectShowProxy.VideoInputDeviceInfo info)
         {
-            _name = info.FriendlyName;
-            _devicePath = info.DevicePath;
+            this._name = info.FriendlyName;
+            this._devicePath = info.DevicePath;
         }
 
         private readonly String _name;
@@ -20,7 +20,7 @@ namespace WebEye
         /// </summary>
         public String Name
         {
-            get { return _name; }
+            get { return this._name; }
         }
 
         private readonly String _devicePath;
@@ -30,7 +30,7 @@ namespace WebEye
         /// </summary>
         internal String DevicePath
         {
-            get { return _devicePath; }
+            get { return this._devicePath; }
         }
 
         public override Boolean Equals(object obj)
@@ -38,7 +38,7 @@ namespace WebEye
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != typeof(WebCameraId)) return false;
-            return Equals((WebCameraId)obj);
+            return this.Equals((WebCameraId)obj);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace WebEye
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Equals(other._name, _name) && Equals(other._devicePath, _devicePath);
+            return Equals(other._name, this._name) && Equals(other._devicePath, this._devicePath);
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace WebEye
         {
             unchecked
             {
-                return (_name.GetHashCode() * 397) ^ _devicePath.GetHashCode();
+                return (this._name.GetHashCode() * 397) ^ this._devicePath.GetHashCode();
             }
         }
 

@@ -1,13 +1,14 @@
-﻿using System;
-using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Runtime.InteropServices;
-using WebEye.Properties;
-
-namespace WebEye
+﻿namespace WebEye.Controls.WinForms.WebCameraControl
 {
+    using System;
+    using System.ComponentModel;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Runtime.InteropServices;
+
+    using WebEye.Controls.WinForms.WebCameraControl.Properties;
+
     public sealed class DirectShowException : Exception
     {
         internal DirectShowException(string message, Int32 hresult)
@@ -76,18 +77,18 @@ namespace WebEye
         /// <exception cref="Win32Exception">Failed to load the utilities dll.</exception>
         private void LoadDll()
         {
-            _dllFile = Path.GetTempFileName();
-            using (FileStream stream = new FileStream(_dllFile, FileMode.Create, FileAccess.Write))
+            this._dllFile = Path.GetTempFileName();
+            using (FileStream stream = new FileStream(this._dllFile, FileMode.Create, FileAccess.Write))
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                 {
-                    writer.Write(IsX86Platform ?
+                    writer.Write(this.IsX86Platform ?
                         Resources.DirectShowFacade : Resources.DirectShowFacade64);
                 }
             }
 
-            _hDll = LoadLibrary(_dllFile);
-            if (_hDll == IntPtr.Zero)
+            this._hDll = LoadLibrary(this._dllFile);
+            if (this._hDll == IntPtr.Zero)
             {
                 throw new Win32Exception(Marshal.GetLastWin32Error());
             }
@@ -103,41 +104,41 @@ namespace WebEye
         private void BindToDll(IntPtr hDll)
         {
             IntPtr pProcPtr = GetProcAddress(hDll, "EnumVideoInputDevices");
-            _enumVideoInputDevices =
+            this._enumVideoInputDevices =
                 (EnumVideoInputDevicesDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(EnumVideoInputDevicesDelegate));
 
             pProcPtr = GetProcAddress(hDll, "BuildCaptureGraph");
-            _buildCaptureGraph =
+            this._buildCaptureGraph =
                 (BuildCaptureGraphDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(BuildCaptureGraphDelegate));
 
             pProcPtr = GetProcAddress(hDll, "AddRenderFilter");
-            _addRenderFilter =
+            this._addRenderFilter =
                 (AddRenderFilterDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(AddRenderFilterDelegate));
 
             pProcPtr = GetProcAddress(hDll, "AddCaptureFilter");
-            _addCaptureFilter =
+            this._addCaptureFilter =
                 (AddCaptureFilterDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(AddCaptureFilterDelegate));
 
             pProcPtr = GetProcAddress(hDll, "ResetCaptureGraph");
-            _resetCaptureGraph =
+            this._resetCaptureGraph =
                 (ResetCaptureGraphDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(ResetCaptureGraphDelegate));
 
             pProcPtr = GetProcAddress(hDll, "Start");
-            _start = (StartDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(StartDelegate));
+            this._start = (StartDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(StartDelegate));
 
             pProcPtr = GetProcAddress(hDll, "GetCurrentImage");
-            _getCurrentImage =
+            this._getCurrentImage =
                 (GetCurrentImageDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(GetCurrentImageDelegate));
 
             pProcPtr = GetProcAddress(hDll, "GetVideoSize");
-            _getVideoSize =
+            this._getVideoSize =
                 (GetVideoSizeDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(GetVideoSizeDelegate));
 
             pProcPtr = GetProcAddress(hDll, "Stop");
-            _stop = (StopDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(StopDelegate));
+            this._stop = (StopDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(StopDelegate));
 
             pProcPtr = GetProcAddress(hDll, "DestroyCaptureGraph");
-            _destroyCaptureGraph =
+            this._destroyCaptureGraph =
                 (DestroyCaptureGraphDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(DestroyCaptureGraphDelegate));            
         }
 
@@ -147,8 +148,8 @@ namespace WebEye
         /// <exception cref="Win32Exception">Failed to load the utilities dll.</exception>
         internal DirectShowProxy()
         {
-            LoadDll();
-            BindToDll(_hDll);
+            this.LoadDll();
+            this.BindToDll(this._hDll);
         }
 
         /// <summary>
@@ -157,7 +158,7 @@ namespace WebEye
         /// <param name="callback">A callback method.</param>
         internal void EnumVideoInputDevices(EnumVideoInputDevicesCallback callback)
         {
-            _enumVideoInputDevices(callback);
+            this._enumVideoInputDevices(callback);
         }
 
         /// <summary>
@@ -178,7 +179,7 @@ namespace WebEye
         /// </summary>
         internal void BuildCaptureGraph()
         {
-            ThrowExceptionForResult(_buildCaptureGraph(), "Failed to build a video capture graph.");
+            ThrowExceptionForResult(this._buildCaptureGraph(), "Failed to build a video capture graph.");
         }
 
         /// <summary>
@@ -187,7 +188,7 @@ namespace WebEye
         /// <param name="hWnd">A container window that video should be clipped to.</param>
         internal void AddRenderFilter(IntPtr hWnd)
         {
-            ThrowExceptionForResult(_addRenderFilter(hWnd), "Failed to setup a render filter.");
+            ThrowExceptionForResult(this._addRenderFilter(hWnd), "Failed to setup a render filter.");
         }
 
         /// <summary>
@@ -196,7 +197,7 @@ namespace WebEye
         /// <param name="devicePath">A device path of a video capture filter to add.</param>
         internal void AddCaptureFilter(String devicePath)
         {
-            ThrowExceptionForResult(_addCaptureFilter(devicePath), "Failed to add a video capture filter.");
+            ThrowExceptionForResult(this._addCaptureFilter(devicePath), "Failed to add a video capture filter.");
         }
 
         /// <summary>
@@ -204,7 +205,7 @@ namespace WebEye
         /// </summary>
         internal void ResetCaptureGraph()
         {
-            ThrowExceptionForResult(_resetCaptureGraph(), "Failed to reset a video capture graph.");
+            ThrowExceptionForResult(this._resetCaptureGraph(), "Failed to reset a video capture graph.");
         }
 
         /// <summary>
@@ -213,7 +214,7 @@ namespace WebEye
         /// </summary>
         internal void Start()
         {
-            ThrowExceptionForResult(_start(), "Failed to run a capture graph.");
+            ThrowExceptionForResult(this._start(), "Failed to run a capture graph.");
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -239,7 +240,7 @@ namespace WebEye
         internal Bitmap GetCurrentImage()
         {
             IntPtr dibPtr;
-            ThrowExceptionForResult(_getCurrentImage(out dibPtr), "Failed to get the current image.");
+            ThrowExceptionForResult(this._getCurrentImage(out dibPtr), "Failed to get the current image.");
 
             try
             {
@@ -296,7 +297,7 @@ namespace WebEye
         internal Size GetVideoSize()
         {
             Int32 width, height;
-            ThrowExceptionForResult(_getVideoSize(out width, out height), "Failed to get the video size.");
+            ThrowExceptionForResult(this._getVideoSize(out width, out height), "Failed to get the video size.");
 
             return new Size(width, height);
         }
@@ -306,7 +307,7 @@ namespace WebEye
         /// </summary>
         internal void Stop()
         {
-            ThrowExceptionForResult(_stop(), "Failed to stop a video capture graph.");
+            ThrowExceptionForResult(this._stop(), "Failed to stop a video capture graph.");
         }
 
         /// <summary>
@@ -314,7 +315,7 @@ namespace WebEye
         /// </summary>
         internal void DestroyCaptureGraph()
         {
-            _destroyCaptureGraph();
+            this._destroyCaptureGraph();
         }
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -323,15 +324,15 @@ namespace WebEye
 
         public void Dispose()
         {
-            if (_hDll != IntPtr.Zero)
+            if (this._hDll != IntPtr.Zero)
             {
-                FreeLibrary(_hDll);
-                _hDll = IntPtr.Zero;
+                FreeLibrary(this._hDll);
+                this._hDll = IntPtr.Zero;
             }
 
-            if (File.Exists(_dllFile))
+            if (File.Exists(this._dllFile))
             {
-                File.Delete(_dllFile);
+                File.Delete(this._dllFile);
             }
         }
     }

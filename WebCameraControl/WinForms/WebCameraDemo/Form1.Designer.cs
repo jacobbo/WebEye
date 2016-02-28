@@ -1,5 +1,7 @@
 ﻿namespace WebCameraDemo
 {
+    using WebEye.Controls.WinForms.WebCameraControl;
+
     partial class Form1
     {
         /// <summary>
@@ -31,7 +33,7 @@
             this.startButton = new System.Windows.Forms.Button();
             this.stopButton = new System.Windows.Forms.Button();
             this.imageButton = new System.Windows.Forms.Button();
-            this.webCameraControl1 = new WebEye.WebCameraControl();
+            this.webCameraControl1 = new WebCameraControl();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
@@ -116,7 +118,7 @@
         private System.Windows.Forms.Button startButton;
         private System.Windows.Forms.Button stopButton;
         private System.Windows.Forms.Button imageButton;
-        private WebEye.WebCameraControl webCameraControl1;
+        private WebCameraControl webCameraControl1;
         private System.Windows.Forms.ComboBox comboBox1;
 
     }

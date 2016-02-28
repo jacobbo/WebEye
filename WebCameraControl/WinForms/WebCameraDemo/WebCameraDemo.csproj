@@ -59,8 +59,8 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="WebCameraControl">
-      <HintPath>..\WebCameraControl\bin\Release\WebCameraControl.dll</HintPath>
+    <Reference Include="WebEye.Controls.WinForms.WebCameraControl">
+      <HintPath>packages\WebEye.Controls.WinForms.WebCameraControl.1.0.0.0\lib\net20\WebEye.Controls.WinForms.WebCameraControl.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -86,6 +86,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <None Include="app.config" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

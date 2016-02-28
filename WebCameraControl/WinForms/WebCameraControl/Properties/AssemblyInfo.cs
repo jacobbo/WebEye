@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("WebCameraControl")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("WebEye.Controls.WinForms.WebCameraControl")]
+[assembly: AssemblyDescription("A yet another web camera control.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("WebCameraControl")]
-[assembly: AssemblyCopyright("Copyright ©  2012")]
+[assembly: AssemblyCompany("WebEye")]
+[assembly: AssemblyProduct("WebEye.Controls.WinForms.WebCameraControl")]
+[assembly: AssemblyCopyright("Copyright © WebEye 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

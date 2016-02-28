@@ -8,8 +8,8 @@
     <ProjectGuid>{3AABC06A-82FB-46EF-9BC7-ED295FFC6A8E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WebEye</RootNamespace>
-    <AssemblyName>WebCameraControl</AssemblyName>
+    <RootNamespace>WebEye.Controls.WinForms.WebCameraControl</RootNamespace>
+    <AssemblyName>WebEye.Controls.WinForms.WebCameraControl</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
