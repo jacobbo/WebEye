@@ -30,7 +30,9 @@
         private readonly List<WebCameraId> _captureDevices = new List<WebCameraId>();
         private void SaveVideoDevice(ref DirectShowProxy.VideoInputDeviceInfo info)
         {
-            this._captureDevices.Add(new WebCameraId(info));
+           var webCam = new WebCameraId(info);
+            if(webCam.DevicePath != null)
+            this._captureDevices.Add(webCam);
         }
 
         /// <summary>
