@@ -17,20 +17,23 @@
         {
             InitializeComponent();
 
-            this.Dispatcher.ShutdownStarted += this.OnShutdownStarted; 
+            Dispatcher.ShutdownStarted += OnShutdownStarted; 
         }
 
         private DirectShowProxy _proxy;
 
         private DirectShowProxy Proxy
         {
-            get { return this._proxy ?? (this._proxy = new DirectShowProxy()); }
+            get { return _proxy ?? (_proxy = new DirectShowProxy()); }
         }
 
         private readonly List<WebCameraId> _captureDevices = new List<WebCameraId>();
         private void SaveVideoDevice(ref DirectShowProxy.VideoInputDeviceInfo info)
         {
-            this._captureDevices.Add(new WebCameraId(info));
+            if (!string.IsNullOrEmpty(info.DevicePath))
+            {
+                _captureDevices.Add(new WebCameraId(info));
+            }
         }
 
         /// <summary>
@@ -39,10 +42,10 @@
         /// <exception cref="Win32Exception">Failed to load the DirectShow utilities dll.</exception>
         public IEnumerable<WebCameraId> GetVideoCaptureDevices()
         {
-            this._captureDevices.Clear();
-            this.Proxy.EnumVideoInputDevices(this.SaveVideoDevice);
+            _captureDevices.Clear();
+            Proxy.EnumVideoInputDevices(SaveVideoDevice);
 
-            return new List<WebCameraId>(this._captureDevices);
+            return new List<WebCameraId>(_captureDevices);
         }
 
         /// <summary>
@@ -52,8 +55,8 @@
         /// <exception cref="DirectShowException">Failed to setup a capture graph.</exception>
         private void InitializeCaptureGraph()
         {
-            this.Proxy.BuildCaptureGraph();
-            this.Proxy.AddRenderFilter(this._videoWindow.Handle);
+            Proxy.BuildCaptureGraph();
+            Proxy.AddRenderFilter(_videoWindow.Handle);
         }
 
         private static readonly DependencyPropertyKey IsCapturingPropertyKey
@@ -69,8 +72,8 @@
         [Browsable(false)]
         public Boolean IsCapturing
         {
-            get { return (Boolean)this.GetValue(IsCapturingProperty); }
-            private set { this.SetValue(IsCapturingPropertyKey, value); }
+            get { return (Boolean)GetValue(IsCapturingProperty); }
+            private set { SetValue(IsCapturingPropertyKey, value); }
         }
 
         private Boolean _captureGraphInitialized;
@@ -90,41 +93,41 @@
                 throw new ArgumentNullException();
             }
 
-            if (!this._captureGraphInitialized)
+            if (!_captureGraphInitialized)
             {
-                this.InitializeCaptureGraph();
+                InitializeCaptureGraph();
 
-                this._captureGraphInitialized = true;
+                _captureGraphInitialized = true;
             }
 
-            if (this.IsCapturing)
+            if (IsCapturing)
             {
-                if (this._currentCamera == camera)
+                if (_currentCamera == camera)
                 {
                     return;
                 }
 
-                this.StopCapture();
+                StopCapture();
             }
 
-            if (this._currentCamera != null)
+            if (_currentCamera != null)
             {
-                this.Proxy.ResetCaptureGraph();
-                this._currentCamera = null;
+                Proxy.ResetCaptureGraph();
+                _currentCamera = null;
             }
 
-            this.Proxy.AddCaptureFilter(camera.DevicePath);
-            this._currentCamera = camera;
+            Proxy.AddCaptureFilter(camera.DevicePath);
+            _currentCamera = camera;
 
             try
             {
-                this.Proxy.Start();
-                this.IsCapturing = true;
+                Proxy.Start();
+                IsCapturing = true;
             }
             catch (DirectShowException)
             {
-                this.Proxy.ResetCaptureGraph();
-                this._currentCamera = null;
+                Proxy.ResetCaptureGraph();
+                _currentCamera = null;
                 throw;
             }
         }
@@ -137,12 +140,12 @@
         /// <exception cref="DirectShowException">Failed to get the current image.</exception>
         public Bitmap GetCurrentImage()
         {
-            if (!this.IsCapturing)
+            if (!IsCapturing)
             {
                 throw new InvalidOperationException();
             }
 
-            return this.Proxy.GetCurrentImage();
+            return Proxy.GetCurrentImage();
         }
 
         /// <summary>
@@ -151,7 +154,7 @@
         [Browsable(false)]
         public Size VideoSize
         {
-            get { return this.IsCapturing ? this.Proxy.GetVideoSize() : new Size(0, 0); }
+            get { return IsCapturing ? Proxy.GetVideoSize() : new Size(0, 0); }
         }
 
         /// <summary>
@@ -161,29 +164,29 @@
         /// <exception cref="DirectShowException">Failed to stop a video capture graph.</exception>
         public void StopCapture()
         {
-            if (!this.IsCapturing)
+            if (!IsCapturing)
             {
                 throw new InvalidOperationException();
             }
 
-            this.Proxy.Stop();
-            this.IsCapturing = false;
+            Proxy.Stop();
+            IsCapturing = false;
 
-            this.Proxy.ResetCaptureGraph();
-            this._currentCamera = null;
+            Proxy.ResetCaptureGraph();
+            _currentCamera = null;
         }
 
         private void OnShutdownStarted(object sender, EventArgs eventArgs)
         {
-            if (this._proxy != null)
+            if (_proxy != null)
             {
-                if (this.IsCapturing)
+                if (IsCapturing)
                 {
-                    this.StopCapture();
+                    StopCapture();
                 }
 
-                this._proxy.DestroyCaptureGraph();
-                this._proxy.Dispose();
+                _proxy.DestroyCaptureGraph();
+                _proxy.Dispose();
             }
         }
 

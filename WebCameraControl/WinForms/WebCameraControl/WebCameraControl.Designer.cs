@@ -15,8 +15,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            components = new System.ComponentModel.Container();
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         }
 
         #endregion

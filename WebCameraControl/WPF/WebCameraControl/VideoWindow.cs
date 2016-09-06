@@ -23,7 +23,7 @@
 
         IntPtr _hWnd = IntPtr.Zero;
 
-        internal new IntPtr Handle { get { return this._hWnd; } }
+        internal new IntPtr Handle { get { return _hWnd; } }
 
         /// <summary>
         /// The CreateWindowEx function creates an overlapped, pop-up, or child window with an extended window style; otherwise, this function is identical to the CreateWindow function. 
@@ -73,11 +73,11 @@
             RECT clientArea;
             GetClientRect(hWndParent.Handle, out clientArea);
 
-            this._hWnd = CreateWindowEx(0, "Static", "", WindowStyles.WS_CHILD | WindowStyles.WS_VISIBLE,
+            _hWnd = CreateWindowEx(0, "Static", "", WindowStyles.WS_CHILD | WindowStyles.WS_VISIBLE,
                             0, 0, clientArea.right - clientArea.left, clientArea.bottom - clientArea.top,
                             hWndParent.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
-            return new HandleRef(this, this._hWnd);
+            return new HandleRef(this, _hWnd);
         }
 
         /// <summary>

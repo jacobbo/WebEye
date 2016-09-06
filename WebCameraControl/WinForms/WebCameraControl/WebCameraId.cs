@@ -9,8 +9,8 @@
         /// </summary>
         internal WebCameraId(DirectShowProxy.VideoInputDeviceInfo info)
         {
-            this._name = info.FriendlyName;
-            this._devicePath = info.DevicePath;
+            _name = info.FriendlyName;
+            _devicePath = info.DevicePath;
         }
 
         private readonly String _name;
@@ -20,7 +20,7 @@
         /// </summary>
         public String Name
         {
-            get { return this._name; }
+            get { return _name; }
         }
 
         private readonly String _devicePath;
@@ -30,7 +30,7 @@
         /// </summary>
         internal String DevicePath
         {
-            get { return this._devicePath; }
+            get { return _devicePath; }
         }
 
         public override Boolean Equals(object obj)
@@ -38,7 +38,7 @@
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != typeof(WebCameraId)) return false;
-            return this.Equals((WebCameraId)obj);
+            return Equals((WebCameraId)obj);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Equals(other._name, this._name) && Equals(other._devicePath, this._devicePath);
+            return Equals(other._name, _name) && Equals(other._devicePath, _devicePath);
         }
 
         /// <summary>
@@ -65,7 +65,7 @@
         {
             unchecked
             {
-                return (this._name.GetHashCode() * 397) ^ this._devicePath.GetHashCode();
+                return (_name.GetHashCode() * 397) ^ _devicePath.GetHashCode();
             }
         }
 

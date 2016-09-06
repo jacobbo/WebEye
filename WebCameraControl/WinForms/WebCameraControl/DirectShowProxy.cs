@@ -77,18 +77,18 @@
         /// <exception cref="Win32Exception">Failed to load the utilities dll.</exception>
         private void LoadDll()
         {
-            this._dllFile = Path.GetTempFileName();
-            using (FileStream stream = new FileStream(this._dllFile, FileMode.Create, FileAccess.Write))
+            _dllFile = Path.GetTempFileName();
+            using (FileStream stream = new FileStream(_dllFile, FileMode.Create, FileAccess.Write))
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                 {
-                    writer.Write(this.IsX86Platform ?
+                    writer.Write(IsX86Platform ?
                         Resources.DirectShowFacade : Resources.DirectShowFacade64);
                 }
             }
 
-            this._hDll = LoadLibrary(this._dllFile);
-            if (this._hDll == IntPtr.Zero)
+            _hDll = LoadLibrary(_dllFile);
+            if (_hDll == IntPtr.Zero)
             {
                 throw new Win32Exception(Marshal.GetLastWin32Error());
             }
@@ -104,41 +104,41 @@
         private void BindToDll(IntPtr hDll)
         {
             IntPtr pProcPtr = GetProcAddress(hDll, "EnumVideoInputDevices");
-            this._enumVideoInputDevices =
+            _enumVideoInputDevices =
                 (EnumVideoInputDevicesDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(EnumVideoInputDevicesDelegate));
 
             pProcPtr = GetProcAddress(hDll, "BuildCaptureGraph");
-            this._buildCaptureGraph =
+            _buildCaptureGraph =
                 (BuildCaptureGraphDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(BuildCaptureGraphDelegate));
 
             pProcPtr = GetProcAddress(hDll, "AddRenderFilter");
-            this._addRenderFilter =
+            _addRenderFilter =
                 (AddRenderFilterDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(AddRenderFilterDelegate));
 
             pProcPtr = GetProcAddress(hDll, "AddCaptureFilter");
-            this._addCaptureFilter =
+            _addCaptureFilter =
                 (AddCaptureFilterDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(AddCaptureFilterDelegate));
 
             pProcPtr = GetProcAddress(hDll, "ResetCaptureGraph");
-            this._resetCaptureGraph =
+            _resetCaptureGraph =
                 (ResetCaptureGraphDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(ResetCaptureGraphDelegate));
 
             pProcPtr = GetProcAddress(hDll, "Start");
-            this._start = (StartDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(StartDelegate));
+            _start = (StartDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(StartDelegate));
 
             pProcPtr = GetProcAddress(hDll, "GetCurrentImage");
-            this._getCurrentImage =
+            _getCurrentImage =
                 (GetCurrentImageDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(GetCurrentImageDelegate));
 
             pProcPtr = GetProcAddress(hDll, "GetVideoSize");
-            this._getVideoSize =
+            _getVideoSize =
                 (GetVideoSizeDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(GetVideoSizeDelegate));
 
             pProcPtr = GetProcAddress(hDll, "Stop");
-            this._stop = (StopDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(StopDelegate));
+            _stop = (StopDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(StopDelegate));
 
             pProcPtr = GetProcAddress(hDll, "DestroyCaptureGraph");
-            this._destroyCaptureGraph =
+            _destroyCaptureGraph =
                 (DestroyCaptureGraphDelegate)Marshal.GetDelegateForFunctionPointer(pProcPtr, typeof(DestroyCaptureGraphDelegate));            
         }
 
@@ -148,8 +148,8 @@
         /// <exception cref="Win32Exception">Failed to load the utilities dll.</exception>
         internal DirectShowProxy()
         {
-            this.LoadDll();
-            this.BindToDll(this._hDll);
+            LoadDll();
+            BindToDll(_hDll);
         }
 
         /// <summary>
@@ -158,7 +158,7 @@
         /// <param name="callback">A callback method.</param>
         internal void EnumVideoInputDevices(EnumVideoInputDevicesCallback callback)
         {
-            this._enumVideoInputDevices(callback);
+            _enumVideoInputDevices(callback);
         }
 
         /// <summary>
@@ -179,7 +179,7 @@
         /// </summary>
         internal void BuildCaptureGraph()
         {
-            ThrowExceptionForResult(this._buildCaptureGraph(), "Failed to build a video capture graph.");
+            ThrowExceptionForResult(_buildCaptureGraph(), "Failed to build a video capture graph.");
         }
 
         /// <summary>
@@ -188,7 +188,7 @@
         /// <param name="hWnd">A container window that video should be clipped to.</param>
         internal void AddRenderFilter(IntPtr hWnd)
         {
-            ThrowExceptionForResult(this._addRenderFilter(hWnd), "Failed to setup a render filter.");
+            ThrowExceptionForResult(_addRenderFilter(hWnd), "Failed to setup a render filter.");
         }
 
         /// <summary>
@@ -197,7 +197,7 @@
         /// <param name="devicePath">A device path of a video capture filter to add.</param>
         internal void AddCaptureFilter(String devicePath)
         {
-            ThrowExceptionForResult(this._addCaptureFilter(devicePath), "Failed to add a video capture filter.");
+            ThrowExceptionForResult(_addCaptureFilter(devicePath), "Failed to add a video capture filter.");
         }
 
         /// <summary>
@@ -205,7 +205,7 @@
         /// </summary>
         internal void ResetCaptureGraph()
         {
-            ThrowExceptionForResult(this._resetCaptureGraph(), "Failed to reset a video capture graph.");
+            ThrowExceptionForResult(_resetCaptureGraph(), "Failed to reset a video capture graph.");
         }
 
         /// <summary>
@@ -214,7 +214,7 @@
         /// </summary>
         internal void Start()
         {
-            ThrowExceptionForResult(this._start(), "Failed to run a capture graph.");
+            ThrowExceptionForResult(_start(), "Failed to run a capture graph.");
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -240,7 +240,7 @@
         internal Bitmap GetCurrentImage()
         {
             IntPtr dibPtr;
-            ThrowExceptionForResult(this._getCurrentImage(out dibPtr), "Failed to get the current image.");
+            ThrowExceptionForResult(_getCurrentImage(out dibPtr), "Failed to get the current image.");
 
             try
             {
@@ -297,7 +297,7 @@
         internal Size GetVideoSize()
         {
             Int32 width, height;
-            ThrowExceptionForResult(this._getVideoSize(out width, out height), "Failed to get the video size.");
+            ThrowExceptionForResult(_getVideoSize(out width, out height), "Failed to get the video size.");
 
             return new Size(width, height);
         }
@@ -307,7 +307,7 @@
         /// </summary>
         internal void Stop()
         {
-            ThrowExceptionForResult(this._stop(), "Failed to stop a video capture graph.");
+            ThrowExceptionForResult(_stop(), "Failed to stop a video capture graph.");
         }
 
         /// <summary>
@@ -315,7 +315,7 @@
         /// </summary>
         internal void DestroyCaptureGraph()
         {
-            this._destroyCaptureGraph();
+            _destroyCaptureGraph();
         }
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -324,15 +324,15 @@
 
         public void Dispose()
         {
-            if (this._hDll != IntPtr.Zero)
+            if (_hDll != IntPtr.Zero)
             {
-                FreeLibrary(this._hDll);
-                this._hDll = IntPtr.Zero;
+                FreeLibrary(_hDll);
+                _hDll = IntPtr.Zero;
             }
 
-            if (File.Exists(this._dllFile))
+            if (File.Exists(_dllFile))
             {
-                File.Delete(this._dllFile);
+                File.Delete(_dllFile);
             }
         }
     }
