@@ -469,5 +469,5 @@ void __stdcall DestroyCaptureGraph()
         ATLASSERT(g_spCaptureGraphBuilder == NULL);
     }
 
-    ::CoUninitialize();
+    //::CoUninitialize();
 }

@@ -81,12 +81,8 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\DirectShowFacade64.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\DirectShowFacade.dll" />
+    <None Include="Resources\DirectShowFacade64.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
