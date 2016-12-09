@@ -2,8 +2,8 @@
 <package >
   <metadata>
     <id>WebEye.Controls.WinForms.WebCameraControl</id>
-    <version>1.0.0.0</version>
-    <authors>Alexander Yakobchuk</authors>
+    <version>1.0.1.0</version>
+    <authors>Alexander Iacobciuc</authors>
     <owners>WebEye</owners>
     <licenseUrl>http://www.codeproject.com/info/cpol10.aspx</licenseUrl>
     <projectUrl>https://github.com/jacobbo/WebEye/tree/master/WebCameraControl</projectUrl>
