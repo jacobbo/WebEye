@@ -17,7 +17,14 @@
         {
             InitializeComponent();
 
-            Dispatcher.ShutdownStarted += OnShutdownStarted; 
+            Loaded += (s, a) =>
+            {
+                var parent = Window.GetWindow(this);
+                if (parent != null)
+                {
+                    parent.Closed += HandleWindowClosed;
+                }
+            };
         }
 
         private DirectShowProxy _proxy;
@@ -176,7 +183,7 @@
             _currentCamera = null;
         }
 
-        private void OnShutdownStarted(object sender, EventArgs eventArgs)
+        private void HandleWindowClosed(object sender, EventArgs eventArgs)
         {
             if (_proxy != null)
             {
@@ -188,6 +195,8 @@
                 _proxy.DestroyCaptureGraph();
                 _proxy.Dispose();
             }
+
+            _videoWindow.Dispose();
         }
 
         protected override void OnContentChanged(object oldContent, object newContent)
