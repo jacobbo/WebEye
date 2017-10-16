@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.streamPlayerControl1 = new WebEye.StreamPlayerControl();
+            this.streamPlayerControl1 = new WebEye.Controls.WinForms.StreamPlayerControl.StreamPlayerControl();
             this._urlTextBox = new System.Windows.Forms.TextBox();
             this._playButton = new System.Windows.Forms.Button();
             this._stopButton = new System.Windows.Forms.Button();
@@ -47,7 +47,7 @@
             this.streamPlayerControl1.TabIndex = 0;
             this.streamPlayerControl1.StreamStarted += new System.EventHandler(this.HandleStreamStartedEvent);
             this.streamPlayerControl1.StreamStopped += new System.EventHandler(this.HandleStreamStoppedEvent);
-            this.streamPlayerControl1.StreamFailed += new System.EventHandler<WebEye.StreamFailedEventArgs>(this.HandleStreamFailedEvent);
+            this.streamPlayerControl1.StreamFailed += new System.EventHandler<WebEye.Controls.WinForms.StreamPlayerControl.StreamFailedEventArgs>(this.HandleStreamFailedEvent);
             // 
             // _urlTextBox
             // 
@@ -123,7 +123,7 @@
 
         #endregion
 
-        private WebEye.StreamPlayerControl streamPlayerControl1;
+        private WebEye.Controls.WinForms.StreamPlayerControl.StreamPlayerControl streamPlayerControl1;
         private System.Windows.Forms.TextBox _urlTextBox;
         private System.Windows.Forms.Button _playButton;
         private System.Windows.Forms.Button _stopButton;

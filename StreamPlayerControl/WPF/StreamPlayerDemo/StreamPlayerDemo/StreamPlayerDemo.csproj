@@ -42,9 +42,8 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="WebEye.StreamPlayerControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\StreamPlayerControl\StreamPlayerControl\bin\Release\WebEye.StreamPlayerControl.dll</HintPath>
+    <Reference Include="WebEye.Controls.Wpf.StreamPlayerControl">
+      <HintPath>..\..\StreamPlayerControl\StreamPlayerControl\bin\Release\WebEye.Controls.Wpf.StreamPlayerControl.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />

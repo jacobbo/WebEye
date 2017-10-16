@@ -1,4 +1,4 @@
-﻿namespace WebEye
+﻿namespace WebEye.Controls.WinForms.StreamPlayerControl
 {
     partial class StreamPlayerControl
     {
@@ -6,7 +6,7 @@
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
-        
+
         #region Component Designer generated code
 
         /// <summary>

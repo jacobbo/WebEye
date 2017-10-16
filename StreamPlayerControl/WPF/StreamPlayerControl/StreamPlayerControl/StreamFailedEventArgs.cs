@@ -1,4 +1,4 @@
-﻿namespace WebEye
+﻿namespace WebEye.Controls.Wpf.StreamPlayerControl
 {
     using System.Windows;
 

@@ -39,9 +39,8 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="WebEye.StreamPlayerControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\StreamPlayerControl\StreamPlayerControl\bin\Release\WebEye.StreamPlayerControl.dll</HintPath>
+    <Reference Include="WebEye.Controls.WinForms.StreamPlayerControl">
+      <HintPath>..\..\StreamPlayerControl\StreamPlayerControl\bin\Release\WebEye.Controls.WinForms.StreamPlayerControl.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

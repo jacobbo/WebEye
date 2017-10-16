@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    using WebEye;
+    using WebEye.Controls.WinForms.StreamPlayerControl;
 
     public partial class Form1 : Form
     {

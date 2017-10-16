@@ -85,33 +85,44 @@ void Stream::Open(string const& streamUrl)
         throw runtime_error("avformat_find_stream_info() failed: " + AvStrError(error));
     }
 
+	AVStream *videoStreamPtr = nullptr;
     for (uint32_t i = 0; i < formatCtxPtr_->nb_streams; i++)
     {
-        if (formatCtxPtr_->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
+        if (formatCtxPtr_->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
         {
             videoStreamIndex_ = i;
+			videoStreamPtr = formatCtxPtr_->streams[i];
             break;
         }
     }
 
-    if (videoStreamIndex_ == -1)
+    if (videoStreamIndex_ == -1 || videoStreamPtr == nullptr)
     {
         avformat_close_input(&formatCtxPtr_);
         throw runtime_error("no video stream");
     }
 
-    codecCtxPtr_ = formatCtxPtr_->streams[videoStreamIndex_]->codec;
-    AVCodec *codecPtr = avcodec_find_decoder(codecCtxPtr_->codec_id);
+	//AVCodecParameters *codecParamsPtr = formatCtxPtr_->streams[videoStreamIndex_]->codecpar;
+    AVCodec *codecPtr = avcodec_find_decoder(videoStreamPtr->codecpar->codec_id);
     if (codecPtr == nullptr)
     {
         avformat_close_input(&formatCtxPtr_);
         throw runtime_error("avcodec_find_decoder() failed");
     }
 
+	codecCtxPtr_ = avcodec_alloc_context3(codecPtr);
+	error = avcodec_parameters_to_context(codecCtxPtr_, videoStreamPtr->codecpar);
+	if (error < 0)
+	{
+		avcodec_free_context(&codecCtxPtr_);
+		avformat_close_input(&formatCtxPtr_);
+		throw runtime_error("avcodec_parameters_to_context() failed: " + AvStrError(error));
+	}
+
     error = avcodec_open2(codecCtxPtr_, codecPtr, nullptr);
     if (error < 0)
     {
-        avcodec_close(codecCtxPtr_);
+        avcodec_free_context(&codecCtxPtr_);
         avformat_close_input(&formatCtxPtr_);
         throw runtime_error("avcodec_open2() failed: " + AvStrError(error));
     }
@@ -121,8 +132,7 @@ void Stream::Read()
 {
     while (!stopRequested_)
     {
-        AVPacket *packetPtr = static_cast<AVPacket *>(av_malloc(sizeof(AVPacket)));
-        av_init_packet(packetPtr);
+		AVPacket *packetPtr = av_packet_alloc();
         int error = av_read_frame(formatCtxPtr_, packetPtr);
         if (error < 0)
         {
@@ -131,6 +141,7 @@ void Stream::Read()
             //    throw runtime_error("av_read_frame() failed: " + AvStrError(error));
             //}
 
+			av_packet_free(&packetPtr);
             packetQueue_.Push(nullptr);
 
             // The end of a stream.
@@ -143,7 +154,7 @@ void Stream::Read()
         }
         else
         {
-            av_packet_unref(packetPtr);
+			av_packet_free(&packetPtr);
         }
     }
 }
@@ -174,69 +185,90 @@ void Stream::OpenAndRead(string const& streamUrl)
     Read();
 }
 
+unique_ptr<Frame> Stream::CreateFrame(AVFrame *avframePtr)
+{
+	AVFrame *avRgbFramePtr = av_frame_alloc();
+	AVPixelFormat pixelFormat = AV_PIX_FMT_BGR24;
+	av_image_alloc(avRgbFramePtr->data, avRgbFramePtr->linesize,
+		codecCtxPtr_->width, codecCtxPtr_->height, pixelFormat, 1);
+
+	if (imageConvertCtxPtr_ == nullptr)
+	{
+		imageConvertCtxPtr_ = sws_getContext(codecCtxPtr_->width, codecCtxPtr_->height,
+			codecCtxPtr_->pix_fmt, codecCtxPtr_->width, codecCtxPtr_->height,
+			pixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
+
+		if (imageConvertCtxPtr_ == nullptr)
+		{
+			av_freep(&avRgbFramePtr->data[0]);
+			av_frame_free(&avRgbFramePtr);
+
+			throw runtime_error("sws_getContext() failed");
+		}
+	}
+
+	sws_scale(imageConvertCtxPtr_, avframePtr->data,
+		avframePtr->linesize, 0, codecCtxPtr_->height,
+		avRgbFramePtr->data, avRgbFramePtr->linesize);
+
+	unique_ptr<Frame> framePtr = make_unique<Frame>(codecCtxPtr_->width,
+		codecCtxPtr_->height, *avRgbFramePtr);
+
+	av_freep(&avRgbFramePtr->data[0]);
+	av_frame_free(&avRgbFramePtr);
+
+	return framePtr;
+}
+
 unique_ptr<Frame> Stream::GetNextFrame()
 {
-    unique_ptr<Frame> framePtr;
-    AVFrame *avframePtr = av_frame_alloc();
+    unique_ptr<Frame> framePtr;    
 
     while (!stopRequested_)
     {
         AVPacket *packetPtr = nullptr;
-
-        if (!packetQueue_.WaitAndPop(packetPtr) || packetPtr == nullptr)
-        {
+        if (!packetQueue_.WaitAndPop(packetPtr))
+        {			
             break;
         }
 
-        int frameFinished = 0;
-        int bytesUsed = avcodec_decode_video2(codecCtxPtr_, avframePtr, &frameFinished, packetPtr);
-        if (bytesUsed < 0)
-        {
-            av_packet_unref(packetPtr);
-            av_frame_free(&avframePtr);
-            throw runtime_error("avcodec_decode_video2() failed: " + AvStrError(bytesUsed));
-        }
+		int error = avcodec_send_packet(codecCtxPtr_, packetPtr);
+        if (error == AVERROR_EOF)
+		{
+			av_packet_free(&packetPtr);
+			break;
+		}
+		else if (error < 0 && error != AVERROR(EAGAIN))
+		{
+			av_packet_free(&packetPtr);
+			throw runtime_error("avcodec_send_packet() failed: " + AvStrError(error));
+		}
 
-        if (frameFinished != 0)
-        {
-            AVFrame *avRgbFramePtr = av_frame_alloc();
-            AVPixelFormat pixelFormat = AV_PIX_FMT_BGR24;
-            av_image_alloc(avRgbFramePtr->data, avRgbFramePtr->linesize,
-                codecCtxPtr_->width, codecCtxPtr_->height, pixelFormat, 1);
+		AVFrame *avframePtr = av_frame_alloc();
+		error = avcodec_receive_frame(codecCtxPtr_, avframePtr);
+		if (error == 0)
+		{
+			framePtr = CreateFrame(avframePtr);
+			av_frame_free(&avframePtr);
+			av_packet_free(&packetPtr);
 
-            if (imageConvertCtxPtr_ == nullptr)
-            {
-                imageConvertCtxPtr_ = sws_getContext(codecCtxPtr_->width, codecCtxPtr_->height,
-                    codecCtxPtr_->pix_fmt, codecCtxPtr_->width, codecCtxPtr_->height,
-                    pixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
+			break;
+		}
+		else if (error == AVERROR_EOF)
+		{
+			av_frame_free(&avframePtr);
+			av_packet_free(&packetPtr);
+			break;
+		}
+		else if (error < 0 && error != AVERROR(EAGAIN))
+		{
+			av_frame_free(&avframePtr);
+			av_packet_free(&packetPtr);
+			throw runtime_error("avcodec_receive_frame() failed: " + AvStrError(error));
+		}
 
-                if (imageConvertCtxPtr_ == nullptr)
-                {
-                    av_freep(&avRgbFramePtr->data[0]);
-                    av_frame_free(&avRgbFramePtr);
-
-                    throw runtime_error("sws_getContext() failed");
-                }
-            }
-
-            sws_scale(imageConvertCtxPtr_, avframePtr->data,
-                avframePtr->linesize, 0, codecCtxPtr_->height,
-                avRgbFramePtr->data, avRgbFramePtr->linesize);
-
-
-            framePtr = make_unique<Frame>(codecCtxPtr_->width,
-                codecCtxPtr_->height, *avRgbFramePtr);
-
-            av_freep(&avRgbFramePtr->data[0]);
-            av_frame_free(&avRgbFramePtr);
-            av_frame_free(&avframePtr);
-            av_packet_unref(packetPtr);
-
-            break;
-        }
-
-
-        av_packet_unref(packetPtr);
+		av_frame_free(&avframePtr);
+		av_packet_free(&packetPtr);
     }
 
     return framePtr;
@@ -263,7 +295,7 @@ void Stream::Stop()
     AVPacket *packetPtr = nullptr;
     while (packetQueue_.TryPop(packetPtr))
     {
-        av_packet_unref(packetPtr);
+        av_packet_free(&packetPtr);
     }
 
     if (workerThread_.joinable())
@@ -281,7 +313,7 @@ Stream::~Stream()
 
     if (codecCtxPtr_ != nullptr)
     {
-        avcodec_close(codecCtxPtr_);
+		avcodec_free_context(&codecCtxPtr_);
     }
 
     if (formatCtxPtr_ != nullptr)

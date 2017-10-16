@@ -55,7 +55,7 @@ namespace StreamPlayerDemo
                 _statusLabel.Text = "Failed";
 
                 MessageBox.Show(
-                    ((WebEye.StreamFailedEventArgs)e).Error,
+                    ((WebEye.Controls.Wpf.StreamPlayerControl.StreamFailedEventArgs)e).Error,
                     "Stream Player Demo",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);

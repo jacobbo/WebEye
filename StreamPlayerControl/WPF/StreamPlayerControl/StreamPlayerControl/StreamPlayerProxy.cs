@@ -4,10 +4,10 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
-using WebEye.Properties;
+using WebEye.Controls.Wpf.StreamPlayerControl.Properties;
 using Size = System.Windows.Size;
 
-namespace WebEye
+namespace WebEye.Controls.Wpf.StreamPlayerControl
 {
     /// <summary>
     /// Represents the exception thrown when the stream player fails.

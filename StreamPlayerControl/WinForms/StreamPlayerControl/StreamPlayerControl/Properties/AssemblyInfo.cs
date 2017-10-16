@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("StreamPlayerControl")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("WebEye.Controls.WinForms.StreamPlayerControl")]
+[assembly: AssemblyDescription("WebEye.Controls.WinForms.StreamPlayerControl")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("StreamPlayerControl")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCompany("WebEye")]
+[assembly: AssemblyProduct("WebEye.Controls.WinForms.StreamPlayerControl")]
+[assembly: AssemblyCopyright("Copyright © WebEye 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

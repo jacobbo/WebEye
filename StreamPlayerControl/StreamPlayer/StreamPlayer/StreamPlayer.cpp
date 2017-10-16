@@ -56,7 +56,7 @@ void StreamPlayer::Play(string const& streamUrl,
 	try
 	{
         {
-            unique_lock<mutex> lock(streamMutex_);
+            unique_lock<mutex> lock1(streamMutex_);
             streamPtr_ = make_unique<Stream>(streamUrl, connectionTimeoutInMilliseconds);
         }
 
@@ -80,7 +80,7 @@ void StreamPlayer::Play(string const& streamUrl,
 			}
             else
             {
-                unique_lock<mutex> lock(frameMutex_);
+                unique_lock<mutex> lock1(frameMutex_);
                 framePtr_.reset(framePtr.release());
             }
 
@@ -104,14 +104,14 @@ void StreamPlayer::Play(string const& streamUrl,
 		}
 
         {
-            unique_lock<mutex> lock(streamMutex_);
+            unique_lock<mutex> lock1(streamMutex_);
             streamPtr_.reset();
         }
 	}
 	catch (runtime_error& e)
 	{
         {
-            unique_lock<mutex> lock(errorMutex_);
+            unique_lock<mutex> lock1(errorMutex_);
             error_ = e.what();
         }
 

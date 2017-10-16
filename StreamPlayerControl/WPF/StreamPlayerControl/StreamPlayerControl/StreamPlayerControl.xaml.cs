@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using Size = System.Windows.Size;
 
-namespace WebEye
+namespace WebEye.Controls.Wpf.StreamPlayerControl
 {
     /// <summary>
     /// Interaction logic for StreamPlayerControl.xaml

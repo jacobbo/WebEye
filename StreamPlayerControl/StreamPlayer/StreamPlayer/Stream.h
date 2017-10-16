@@ -97,6 +97,8 @@ namespace FFmpeg
 
             void OpenAndRead(std::string const& streamUrl);
 
+			std::unique_ptr<Frame> CreateFrame(AVFrame *avframePtr);
+
             static int InterruptCallback(void *ctx);
 
 			static std::string AvStrError(int errnum);

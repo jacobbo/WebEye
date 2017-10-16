@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace WebEye
+namespace WebEye.Controls.WinForms.StreamPlayerControl
 {
     using System.Runtime.InteropServices;
 

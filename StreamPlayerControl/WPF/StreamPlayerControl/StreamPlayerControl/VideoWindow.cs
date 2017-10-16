@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 
-namespace WebEye
+namespace WebEye.Controls.Wpf.StreamPlayerControl
 {
     /// <summary>
     /// Hosts a Win32 window used to output frames.
