@@ -197,6 +197,12 @@
             }
 
             _videoWindow.Dispose();
+
+            Window window = sender as Window;
+            if (window != null)
+            {
+                window.Closed -= HandleWindowClosed;
+            }
         }
 
         protected override void OnContentChanged(object oldContent, object newContent)

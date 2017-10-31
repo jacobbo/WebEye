@@ -55,6 +55,7 @@ namespace FFmpeg
 
 	namespace Facade
 	{
+		enum RtspTransport : int32_t;
 		class Frame;
 
 		/// <summary>
@@ -68,8 +69,14 @@ namespace FFmpeg
 			/// </summary>
 			/// <param name="streamUrl">The url of a stream to decode.</param>
             /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
+			/// <param name="transport">RTSP transport protocol.</param>
             Stream(std::string const& streamUrl,
-                int32_t connectionTimeoutInMilliseconds);
+                int32_t connectionTimeoutInMilliseconds, RtspTransport transport);
+
+			/// <summary>
+			/// Blocks the current thread until the stream gets opened or fails to open.
+			/// </summary>
+			void WaitForOpen();
 
 			/// <summary>
 			/// Gets the next frame in the stream.
@@ -82,20 +89,20 @@ namespace FFmpeg
 			/// </summary>
 			int32_t InterframeDelayInMilliseconds() const;
 
+			/// <summary>
+			/// Stops the stream.
+			/// </summary>
             void Stop();
 
-			/// <summary>
-			/// Releases all resources used by the decoder.
-			/// </summary>
-			~Stream();
+		private:			
 
-		private:
-
-            void Open(std::string const& streamUrl);
+            void Open();
 
             void Read();
 
-            void OpenAndRead(std::string const& streamUrl);
+            void OpenAndRead();
+
+			bool IsOpen() const;
 
 			std::unique_ptr<Frame> CreateFrame(AVFrame *avframePtr);
 
@@ -103,22 +110,23 @@ namespace FFmpeg
 
 			static std::string AvStrError(int errnum);
 
+			std::string url_;
             std::chrono::milliseconds connectionTimeout_;
-            boost::atomic<bool> stopRequested_;
+			RtspTransport transport_;
+			bool openedOrFailed_;
+			boost::atomic<bool> stopRequested_;
+			int32_t videoStreamIndex_;
 
-			AVFormatContext *formatCtxPtr_;
-			AVCodecContext  *codecCtxPtr_;			
-			int32_t videoStreamIndex_;			
-			SwsContext *imageConvertCtxPtr_;
-
-            bool completed_;
-            std::string error_;
+			std::unique_ptr<AVFormatContext, std::function<void(AVFormatContext*)>> formatCtxPtr_;
+			std::unique_ptr<AVCodecContext, std::function<void(AVCodecContext*)>> codecCtxPtr_;			
+			std::unique_ptr<SwsContext, std::function<void(SwsContext*)>> imageConvertCtxPtr_;
+			            
+            std::string error_;			
             boost::thread workerThread_;
             boost::mutex mutex_;
-            boost::condition_variable streamOpened_;
+            boost::condition_variable conditionVariable_;
 
             ConcurrentQueue<AVPacket *> packetQueue_;
-
             std::chrono::time_point<std::chrono::system_clock> connectionStart_;            
 		};
 	}

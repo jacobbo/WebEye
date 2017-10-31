@@ -42,6 +42,8 @@ namespace FFmpeg
 			StreamFailedCallback streamFailedCallback;
         };
 
+		enum RtspTransport : int32_t { Undefined = 0, Udp = 1, Tcp = 2, UdpMulticast = 3, Http = 4 };
+
         /// <summary>
         /// A StreamPlayer class implements a stream playback functionality.
         /// </summary>
@@ -65,8 +67,9 @@ namespace FFmpeg
             /// </summary>
             /// <param name="streamUrl">The url of a stream to play.</param>
             /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
+			/// <param name="transport">RTSP transport protocol.</param>
             void StartPlay(std::string const& streamUrl,
-                uint32_t connectionTimeoutInMilliseconds);
+                uint32_t connectionTimeoutInMilliseconds, RtspTransport transport);
 
             /// <summary>
             /// Stops a stream.
@@ -97,8 +100,9 @@ namespace FFmpeg
 			/// </summary>
 			/// <param name="streamUrl">The url of a stream to play.</param>
             /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
+			/// <param name="transport">RTSP transport protocol.</param>
             void Play(std::string const& streamUrl,
-                int32_t connectionTimeoutInMilliseconds);
+                int32_t connectionTimeoutInMilliseconds, RtspTransport transport);
 
 			/// <summary>
 			/// Draws a frame.

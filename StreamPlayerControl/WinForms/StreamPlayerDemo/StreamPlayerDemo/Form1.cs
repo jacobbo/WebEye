@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
         private void playButton_Click(object sender, EventArgs e)
         {
             var uri = new Uri(_urlTextBox.Text);
-            streamPlayerControl1.StartPlay(uri, TimeSpan.FromSeconds(15.0));
+            streamPlayerControl1.StartPlay(uri);
             _statusTextBox.Text = "Connecting...";
         }
 

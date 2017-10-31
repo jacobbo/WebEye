@@ -10,23 +10,6 @@ using Size = System.Windows.Size;
 namespace WebEye.Controls.Wpf.StreamPlayerControl
 {
     /// <summary>
-    /// Represents the exception thrown when the stream player fails.
-    /// </summary>
-    public sealed class StreamPlayerException : Exception
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StreamPlayerException"/> class.
-        /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
-        internal StreamPlayerException(string message)
-            : base(message)
-        {
-        }
-    }
-
-    /// <summary>
     /// Forwards calls to the stream player library.
     /// </summary>
     internal sealed class StreamPlayerProxy : IDisposable
@@ -59,10 +42,11 @@ namespace WebEye.Controls.Wpf.StreamPlayerControl
         /// <param name="url">The url of a stream to play.</param>
         /// <param name="connectionTimeout">The connection timeout.</param>
         /// <exception cref="StreamPlayerException">Failed to play the stream.</exception>
-        internal void StartPlay(String url, TimeSpan connectionTimeout)
+        internal void StartPlay(String url, TimeSpan connectionTimeout, RtspTransport transport)
         {
             if (_startPlayDelegate(url,
-                Convert.ToInt32(connectionTimeout.TotalMilliseconds)) != 0)
+                Convert.ToInt32(connectionTimeout.TotalMilliseconds),
+                Convert.ToInt32(transport)) != 0)
             {
                 throw new StreamPlayerException("Failed to play the stream.");
             }
@@ -248,7 +232,7 @@ namespace WebEye.Controls.Wpf.StreamPlayerControl
         private InitializeDelegate _initialize;
 
         private delegate Int32 StartPlayDelegate([MarshalAs(UnmanagedType.LPStr)]String url,
-            Int32 connectionTimeout);
+            Int32 connectionTimeout, Int32 rtspTransport);
         private StartPlayDelegate _startPlayDelegate;
 
         private delegate Int32 GetCurrentFrameDelegate([Out] out IntPtr dibPtr);

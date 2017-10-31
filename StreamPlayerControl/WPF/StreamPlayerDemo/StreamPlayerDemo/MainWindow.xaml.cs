@@ -17,7 +17,7 @@ namespace StreamPlayerDemo
         private void HandlePlayButtonClick(object sender, RoutedEventArgs e)
         {
             var uri = new Uri(_urlTextBox.Text);
-            _streamPlayerControl.StartPlay(uri, TimeSpan.FromSeconds(15));
+            _streamPlayerControl.StartPlay(uri);
             _statusLabel.Text = "Connecting...";
         }
 

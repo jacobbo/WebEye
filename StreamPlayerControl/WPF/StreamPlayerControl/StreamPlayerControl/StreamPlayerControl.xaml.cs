@@ -16,7 +16,14 @@ namespace WebEye.Controls.Wpf.StreamPlayerControl
         {
             InitializeComponent();
 
-            Dispatcher.ShutdownStarted += HandleShutdownStarted; 
+            Loaded += (s, a) =>
+            {
+                var parent = Window.GetWindow(this);
+                if (parent != null)
+                {
+                    parent.Closed += HandleWindowClosed;
+                }
+            };
         }
 
         private StreamPlayerProxy _player;
@@ -43,7 +50,7 @@ namespace WebEye.Controls.Wpf.StreamPlayerControl
         /// <exception cref="StreamPlayerException">Failed to play the stream.</exception> 
         public void StartPlay(Uri uri)
         {
-            StartPlay(uri, TimeSpan.FromSeconds(5.0));
+            StartPlay(uri, TimeSpan.FromSeconds(5.0), RtspTransport.Undefined);
         }
 
         /// <summary>
@@ -54,7 +61,8 @@ namespace WebEye.Controls.Wpf.StreamPlayerControl
         /// <exception cref="Win32Exception">Failed to load the FFmpeg facade dll.</exception>
         /// <exception cref="StreamPlayerException">Failed to play the stream.</exception>
         /// <param name="connectionTimeout">The connection timeout.</param>
-        public void StartPlay(Uri uri, TimeSpan connectionTimeout)
+        /// <param name="transport">RTSP transport protocol.</param>
+        public void StartPlay(Uri uri, TimeSpan connectionTimeout, RtspTransport transport)
         {
             if (IsPlaying)
             {
@@ -62,7 +70,7 @@ namespace WebEye.Controls.Wpf.StreamPlayerControl
             }
 
             Player.StartPlay(uri.IsFile ? uri.LocalPath : uri.ToString(),
-                connectionTimeout);
+                connectionTimeout, transport);
         }
 
         /// <summary>
@@ -124,7 +132,7 @@ namespace WebEye.Controls.Wpf.StreamPlayerControl
             get { return IsPlaying ? Player.GetFrameSize() : new Size(0, 0); }
         }
 
-        private void HandleShutdownStarted(object sender, EventArgs eventArgs)
+        private void HandleWindowClosed(object sender, EventArgs eventArgs)
         {
             if (_player != null)
             {
@@ -135,6 +143,12 @@ namespace WebEye.Controls.Wpf.StreamPlayerControl
 
                 _player.Uninitialize();
                 _player.Dispose();
+            }
+
+            Window window = sender as Window;
+            if (window != null)
+            {
+                window.Closed -= HandleWindowClosed;
             }
         }
 
