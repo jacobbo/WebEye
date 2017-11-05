@@ -16,14 +16,19 @@ namespace WebEye.Controls.Wpf.StreamPlayerControl
         {
             InitializeComponent();
 
-            Loaded += (s, a) =>
+            Loaded += HandleControlLoaded;
+        }
+
+        private void HandleControlLoaded(object sender, RoutedEventArgs e)
+        {
+            var parent = Window.GetWindow(this);
+            if (parent != null)
             {
-                var parent = Window.GetWindow(this);
-                if (parent != null)
-                {
-                    parent.Closed += HandleWindowClosed;
-                }
-            };
+                parent.Closed += HandleWindowClosed;
+
+                // https://stackoverflow.com/questions/3421303/loaded-event-of-a-wpf-user-control-fire-two-times
+                Loaded -= HandleControlLoaded;
+            }
         }
 
         private StreamPlayerProxy _player;

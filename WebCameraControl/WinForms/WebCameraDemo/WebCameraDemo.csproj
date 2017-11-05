@@ -59,8 +59,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="WebEye.Controls.WinForms.WebCameraControl">
-      <HintPath>packages\WebEye.Controls.WinForms.WebCameraControl.1.0.0.0\lib\net20\WebEye.Controls.WinForms.WebCameraControl.dll</HintPath>
+    <Reference Include="WebEye.Controls.WinForms.WebCameraControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\WebEye.Controls.WinForms.WebCameraControl.1.0.2\lib\net20\WebEye.Controls.WinForms.WebCameraControl.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>

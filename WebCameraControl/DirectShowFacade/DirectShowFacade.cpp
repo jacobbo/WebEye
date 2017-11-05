@@ -4,8 +4,6 @@
 #include <atlbase.h>
 
 #include <dshow.h>
-#include <D3d9.h>
-#include <Vmr9.h>
 
 #pragma comment(lib, "strmiids")
 
@@ -14,7 +12,7 @@ using namespace ATL;
 CComPtr<IGraphBuilder> g_spGraphBuilder;
 CComPtr<ICaptureGraphBuilder2> g_spCaptureGraphBuilder;
 CComPtr<IBaseFilter> g_spRenderFilter;
-CComPtr<IVMRWindowlessControl9> g_spWindowlessControl;
+CComPtr<IVMRWindowlessControl> g_spWindowlessControl;
 CComPtr<IMediaControl> g_spMediaControl;
 bool g_GraphIsRunning = false;
 
@@ -251,10 +249,10 @@ int __stdcall BuildCaptureGraph()
 
 int __stdcall AddRenderFilter(HWND hWnd)
 {
-    HRESULT hr = g_spRenderFilter.CoCreateInstance(CLSID_VideoMixingRenderer9);
+    HRESULT hr = g_spRenderFilter.CoCreateInstance(CLSID_VideoMixingRenderer);
     if (SUCCEEDED(hr))
     {
-        CComQIPtr<IVMRFilterConfig9> spConfig(g_spRenderFilter);
+        CComQIPtr<IVMRFilterConfig> spConfig(g_spRenderFilter);
         if (spConfig != NULL && SUCCEEDED(hr))
         {
             hr = spConfig->SetRenderingMode(VMRMode_Windowless);
@@ -410,7 +408,7 @@ int __stdcall ResetCaptureGraph()
             CComPtr<IBaseFilter> spFilter;
             while (spEnum->Next(1, &spFilter, 0) == S_OK)
             {
-                CComQIPtr<IVMRFilterConfig9> spRenderConfig(spFilter);
+                CComQIPtr<IVMRFilterConfig> spRenderConfig(spFilter);
                 if (spRenderConfig == NULL)
                 {
                     // Remove the filter.
