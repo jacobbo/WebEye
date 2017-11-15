@@ -52,6 +52,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="RtspFlags.cs" />
     <Compile Include="RtspTransport.cs" />
     <Compile Include="StreamFailedEventArgs.cs" />
     <Compile Include="StreamPlayerException.cs" />

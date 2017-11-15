@@ -56,6 +56,7 @@ namespace FFmpeg
 	namespace Facade
 	{
 		enum RtspTransport : int32_t;
+		enum RtspFlags : int32_t;
 		class Frame;
 
 		/// <summary>
@@ -70,8 +71,9 @@ namespace FFmpeg
 			/// <param name="streamUrl">The url of a stream to decode.</param>
             /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
 			/// <param name="transport">RTSP transport protocol.</param>
-            Stream(std::string const& streamUrl,
-                int32_t connectionTimeoutInMilliseconds, RtspTransport transport);
+			/// <param name="flags">RTSP flags.</param>
+            Stream(std::string const& streamUrl,  int32_t connectionTimeoutInMilliseconds,
+				RtspTransport transport, RtspFlags flags);
 
 			/// <summary>
 			/// Blocks the current thread until the stream gets opened or fails to open.
@@ -113,6 +115,7 @@ namespace FFmpeg
 			std::string url_;
             std::chrono::milliseconds connectionTimeout_;
 			RtspTransport transport_;
+			RtspFlags flags_;
 			bool openedOrFailed_;
 			boost::atomic<bool> stopRequested_;
 			int32_t videoStreamIndex_;

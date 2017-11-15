@@ -12,9 +12,10 @@ using namespace FFmpeg;
 using namespace FFmpeg::Facade;
 
 Stream::Stream(string const& streamUrl,
-	int32_t connectionTimeoutInMilliseconds, RtspTransport transport)
+	int32_t connectionTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags)
     : url_(streamUrl), connectionTimeout_(connectionTimeoutInMilliseconds),
-	transport_(transport), openedOrFailed_(false), stopRequested_(false), videoStreamIndex_(-1)
+	transport_(transport), flags_(flags), openedOrFailed_(false),
+	stopRequested_(false), videoStreamIndex_(-1)
 {
 }
 
@@ -146,6 +147,19 @@ void Stream::Open()
 	else if (transport_ == RtspTransport::UdpMulticast)
 	{
 		av_dict_set(&optionsPtr, "rtsp_transport", "udp_multicast", 0);
+	}
+
+	if (flags_ == RtspFlags::FilterSrc)
+	{
+		av_dict_set(&optionsPtr, "rtsp_flags", "filter_src", 0);
+	}
+	else if (flags_ == RtspFlags::Listen)
+	{
+		av_dict_set(&optionsPtr, "rtsp_flags", "listen", 0);
+	}
+	else if (flags_ == RtspFlags::PreferTcp)
+	{
+		av_dict_set(&optionsPtr, "rtsp_flags", "prefer_tcp", 0);
 	}
 
     error = avcodec_open2(codecCtxPtr.get(), codecPtr, &optionsPtr);

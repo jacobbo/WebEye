@@ -37,14 +37,14 @@ void StreamPlayer::Initialize(StreamPlayerParams params)
 }
 
 void StreamPlayer::StartPlay(string const& streamUrl,
-    uint32_t connectionTimeoutInMilliseconds, RtspTransport transport)
+    uint32_t connectionTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags)
 {
 	workerThread_ = boost::thread(&StreamPlayer::Play, this,
-        streamUrl, connectionTimeoutInMilliseconds, transport);
+        streamUrl, connectionTimeoutInMilliseconds, transport, flags);
 }
 
 void StreamPlayer::Play(string const& streamUrl,
-    int32_t connectionTimeoutInMilliseconds, RtspTransport transport)
+    int32_t connectionTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags)
 {
     boost::unique_lock<boost::mutex> lock(workerThreadMutex_, boost::defer_lock);
 	if (!lock.try_lock())
@@ -58,7 +58,7 @@ void StreamPlayer::Play(string const& streamUrl,
         {
             unique_lock<mutex> lock1(streamMutex_);
             streamPtr_ = make_unique<Stream>(streamUrl,
-				connectionTimeoutInMilliseconds, transport);			
+				connectionTimeoutInMilliseconds, transport, flags);
         }
 
 		streamPtr_->WaitForOpen();
