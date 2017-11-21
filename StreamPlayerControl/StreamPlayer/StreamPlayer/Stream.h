@@ -108,6 +108,9 @@ namespace FFmpeg
 
 			std::unique_ptr<Frame> CreateFrame(AVFrame *avframePtr);
 
+			std::unique_ptr<AVDictionary, std::function<void(AVDictionary*)>> GetOptions(RtspTransport transport,
+				RtspFlags flags);
+
             static int InterruptCallback(void *ctx);
 
 			static std::string AvStrError(int errnum);
@@ -120,9 +123,9 @@ namespace FFmpeg
 			boost::atomic<bool> stopRequested_;
 			int32_t videoStreamIndex_;
 
-			std::unique_ptr<AVFormatContext, std::function<void(AVFormatContext*)>> formatCtxPtr_;
-			std::unique_ptr<AVCodecContext, std::function<void(AVCodecContext*)>> codecCtxPtr_;			
-			std::unique_ptr<SwsContext, std::function<void(SwsContext*)>> imageConvertCtxPtr_;
+			std::unique_ptr<AVFormatContext, std::function<void(AVFormatContext*)>> formatContext_;
+			std::unique_ptr<AVCodecContext, std::function<void(AVCodecContext*)>> codecContext_;			
+			std::unique_ptr<SwsContext, std::function<void(SwsContext*)>> imageConvertContext_;
 			            
             std::string error_;			
             boost::thread workerThread_;

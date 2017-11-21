@@ -76,10 +76,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\StreamPlayer64.dll" />
+    <None Include="Resources\StreamPlayer.dll" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\StreamPlayer.dll" />
+    <None Include="Resources\StreamPlayer64.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

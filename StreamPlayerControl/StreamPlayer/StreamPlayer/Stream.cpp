@@ -60,6 +60,49 @@ int Stream::InterruptCallback(void *ctx)
     return 0;
 }
 
+unique_ptr<AVDictionary, std::function<void(AVDictionary*)>> Stream::GetOptions(RtspTransport transport,
+	RtspFlags flags)
+{
+	AVDictionary *optionsPtr = nullptr;
+	if (transport == RtspTransport::Http)
+	{
+		av_dict_set(&optionsPtr, "rtsp_transport", "http", 0);
+	}
+	else if (transport == RtspTransport::Tcp)
+	{
+		av_dict_set(&optionsPtr, "rtsp_transport", "tcp", 0);
+	}
+	else if (transport == RtspTransport::Udp)
+	{
+		av_dict_set(&optionsPtr, "rtsp_transport", "udp", 0);
+	}
+	else if (transport == RtspTransport::UdpMulticast)
+	{
+		av_dict_set(&optionsPtr, "rtsp_transport", "udp_multicast", 0);
+	}
+
+	if (flags == RtspFlags::FilterSrc)
+	{
+		av_dict_set(&optionsPtr, "rtsp_flags", "filter_src", 0);
+	}
+	else if (flags == RtspFlags::Listen)
+	{
+		av_dict_set(&optionsPtr, "rtsp_flags", "listen", 0);
+	}
+	else if (flags == RtspFlags::PreferTcp)
+	{
+		av_dict_set(&optionsPtr, "rtsp_flags", "prefer_tcp", 0);
+	}
+
+	unique_ptr<AVDictionary, std::function<void(AVDictionary*)>>
+		options(optionsPtr, [](AVDictionary* ptr)
+	{
+		av_dict_free(&ptr);
+	});
+
+	return options;
+}
+
 void Stream::Open()
 {
     static once_flag flag = BOOST_ONCE_INIT;
@@ -72,38 +115,42 @@ void Stream::Open()
     });
 
 	unique_ptr<AVFormatContext, std::function<void(AVFormatContext*)>>
-		formatCtxPtr(avformat_alloc_context(), [](AVFormatContext* ptr)
+		formatCtx(avformat_alloc_context(), [](AVFormatContext* ptr)
 	{
 		avformat_close_input(&ptr);
 		avformat_free_context(ptr);
 	});
 
-	formatCtxPtr->interrupt_callback.callback = InterruptCallback;
-	formatCtxPtr->interrupt_callback.opaque = this;
-	formatCtxPtr->flags |= AVFMT_FLAG_NONBLOCK;
+	formatCtx->interrupt_callback.callback = InterruptCallback;
+	formatCtx->interrupt_callback.opaque = this;
+	formatCtx->flags |= AVFMT_FLAG_NONBLOCK;
 
     connectionStart_ = std::chrono::system_clock::now();
+
+	auto options = GetOptions(transport_, flags_);
+	auto optionsPtr = options.release();
     
-	auto rawPtr = formatCtxPtr.get();
-    int error = avformat_open_input(&rawPtr, url_.c_str(), nullptr, nullptr);
+	auto formatCtxPtr = formatCtx.get();
+    int error = avformat_open_input(&formatCtxPtr, url_.c_str(), nullptr, &optionsPtr);
+	options.reset(optionsPtr);
     if (error != 0)
     {
         throw runtime_error("avformat_open_input() failed: " + AvStrError(error));
     }
 
-    error = avformat_find_stream_info(formatCtxPtr.get(), nullptr);
+    error = avformat_find_stream_info(formatCtx.get(), nullptr);
     if (error < 0)
     {
         throw runtime_error("avformat_find_stream_info() failed: " + AvStrError(error));
     }
 
 	AVStream *videoStreamPtr = nullptr;
-    for (uint32_t i = 0; i < formatCtxPtr->nb_streams; i++)
+    for (uint32_t i = 0; i < formatCtx->nb_streams; i++)
     {
-        if (formatCtxPtr->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+        if (formatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
         {
             videoStreamIndex_ = i;
-			videoStreamPtr = formatCtxPtr->streams[i];
+			videoStreamPtr = formatCtx->streams[i];
             break;
         }
     }
@@ -120,57 +167,29 @@ void Stream::Open()
     }
 
 	unique_ptr<AVCodecContext, std::function<void(AVCodecContext*)>>
-		codecCtxPtr(avcodec_alloc_context3(codecPtr), [](AVCodecContext* ptr)
+		codecCtx(avcodec_alloc_context3(codecPtr), [](AVCodecContext* ptr)
 	{
 		avcodec_free_context(&ptr);
 	});
 
-	error = avcodec_parameters_to_context(codecCtxPtr.get(), videoStreamPtr->codecpar);
+	error = avcodec_parameters_to_context(codecCtx.get(), videoStreamPtr->codecpar);
 	if (error < 0)
 	{
 		throw runtime_error("avcodec_parameters_to_context() failed: " + AvStrError(error));
-	}
+	}	
 
-	AVDictionary *optionsPtr = nullptr;
-	if (transport_ == RtspTransport::Http)
-	{
-		av_dict_set(&optionsPtr, "rtsp_transport", "http", 0);
-	}
-	else if (transport_ == RtspTransport::Tcp)
-	{
-		av_dict_set(&optionsPtr, "rtsp_transport", "tcp", 0);
-	}
-	else if (transport_ == RtspTransport::Udp)
-	{
-		av_dict_set(&optionsPtr, "rtsp_transport", "udp", 0);
-	}
-	else if (transport_ == RtspTransport::UdpMulticast)
-	{
-		av_dict_set(&optionsPtr, "rtsp_transport", "udp_multicast", 0);
-	}
+	options = GetOptions(transport_, flags_);
+	optionsPtr = options.release();
 
-	if (flags_ == RtspFlags::FilterSrc)
-	{
-		av_dict_set(&optionsPtr, "rtsp_flags", "filter_src", 0);
-	}
-	else if (flags_ == RtspFlags::Listen)
-	{
-		av_dict_set(&optionsPtr, "rtsp_flags", "listen", 0);
-	}
-	else if (flags_ == RtspFlags::PreferTcp)
-	{
-		av_dict_set(&optionsPtr, "rtsp_flags", "prefer_tcp", 0);
-	}
-
-    error = avcodec_open2(codecCtxPtr.get(), codecPtr, &optionsPtr);
-	av_dict_free(&optionsPtr);
+    error = avcodec_open2(codecCtx.get(), codecPtr, &optionsPtr);
+	options.reset(optionsPtr);
     if (error < 0)
     {
         throw runtime_error("avcodec_open2() failed: " + AvStrError(error));
     }
 
-	formatCtxPtr_.swap(formatCtxPtr);
-	codecCtxPtr_.swap(codecCtxPtr);
+	formatContext_.swap(formatCtx);
+	codecContext_.swap(codecCtx);
 }
 
 void Stream::Read()
@@ -183,7 +202,7 @@ void Stream::Read()
 			av_packet_free(&ptr);
 		});
 
-        int error = av_read_frame(formatCtxPtr_.get(), packetPtr.get());
+        int error = av_read_frame(formatContext_.get(), packetPtr.get());
         if (error < 0)
         {
             //if (error != static_cast<int>(AVERROR_EOF))
@@ -230,7 +249,7 @@ void Stream::OpenAndRead()
 
 bool FFmpeg::Facade::Stream::IsOpen() const
 {
-	return formatCtxPtr_ != nullptr && codecCtxPtr_ != nullptr && videoStreamIndex_ > -1;
+	return formatContext_ != nullptr && codecContext_ != nullptr && videoStreamIndex_ > -1;
 }
 
 unique_ptr<Frame> Stream::CreateFrame(AVFrame *avframePtr)
@@ -245,12 +264,12 @@ unique_ptr<Frame> Stream::CreateFrame(AVFrame *avframePtr)
 	});
 
 	av_image_alloc(avRgbFramePtr->data, avRgbFramePtr->linesize,
-		codecCtxPtr_->width, codecCtxPtr_->height, pixelFormat, 1);
+		codecContext_->width, codecContext_->height, pixelFormat, 1);
 
-	if (imageConvertCtxPtr_ == nullptr)
+	if (imageConvertContext_ == nullptr)
 	{
-		auto rawPtr = sws_getContext(codecCtxPtr_->width, codecCtxPtr_->height,
-			codecCtxPtr_->pix_fmt, codecCtxPtr_->width, codecCtxPtr_->height,
+		auto rawPtr = sws_getContext(codecContext_->width, codecContext_->height,
+			codecContext_->pix_fmt, codecContext_->width, codecContext_->height,
 			pixelFormat, SWS_BICUBIC, nullptr, nullptr, nullptr);
 
 		unique_ptr<SwsContext, std::function<void(SwsContext*)>>
@@ -264,15 +283,15 @@ unique_ptr<Frame> Stream::CreateFrame(AVFrame *avframePtr)
 			throw runtime_error("sws_getContext() failed");
 		}
 
-		imageConvertCtxPtr_.swap(imageConvertCtxPtr);
+		imageConvertContext_.swap(imageConvertCtxPtr);
 	}
 
-	sws_scale(imageConvertCtxPtr_.get(), avframePtr->data,
-		avframePtr->linesize, 0, codecCtxPtr_->height,
+	sws_scale(imageConvertContext_.get(), avframePtr->data,
+		avframePtr->linesize, 0, codecContext_->height,
 		avRgbFramePtr->data, avRgbFramePtr->linesize);
 
-	unique_ptr<Frame> framePtr = make_unique<Frame>(codecCtxPtr_->width,
-		codecCtxPtr_->height, *avRgbFramePtr);
+	unique_ptr<Frame> framePtr = make_unique<Frame>(codecContext_->width,
+		codecContext_->height, *avRgbFramePtr);
 
 	return framePtr;
 }
@@ -295,7 +314,7 @@ unique_ptr<Frame> Stream::GetNextFrame()
 			av_packet_free(&ptr);
 		});
 
-		int error = avcodec_send_packet(codecCtxPtr_.get(), packetPtr.get());
+		int error = avcodec_send_packet(codecContext_.get(), packetPtr.get());
         if (error == AVERROR_EOF)
 		{
 			break;
@@ -310,7 +329,7 @@ unique_ptr<Frame> Stream::GetNextFrame()
 		{
 			av_frame_free(&ptr);
 		});
-		error = avcodec_receive_frame(codecCtxPtr_.get(), avframePtr.get());
+		error = avcodec_receive_frame(codecContext_.get(), avframePtr.get());
 		if (error == 0)
 		{
 			framePtr = CreateFrame(avframePtr.get());
@@ -331,8 +350,8 @@ unique_ptr<Frame> Stream::GetNextFrame()
 
 int32_t Stream::InterframeDelayInMilliseconds() const
 {
-    return codecCtxPtr_->ticks_per_frame * 1000 *
-        codecCtxPtr_->time_base.num / codecCtxPtr_->time_base.den;
+    return codecContext_->ticks_per_frame * 1000 *
+        codecContext_->time_base.num / codecContext_->time_base.den;
 }
 
 string Stream::AvStrError(int errnum)
