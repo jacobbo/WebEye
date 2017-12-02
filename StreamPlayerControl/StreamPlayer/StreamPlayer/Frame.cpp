@@ -8,8 +8,8 @@ using namespace std;
 using namespace FFmpeg;
 using namespace FFmpeg::Facade;
 
-Frame::Frame(uint32_t width, uint32_t height, AVFrame &avFrame)
-    : width_(width), height_(height)
+Frame::Frame(uint32_t width, uint32_t height, double timestamp, AVFrame &avFrame)
+    : width_(width), height_(height), timestamp_(timestamp)
 {
     int32_t lineSize = avFrame.linesize[0];
     uint32_t padding = GetPadding(lineSize);

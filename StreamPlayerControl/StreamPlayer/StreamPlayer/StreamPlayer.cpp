@@ -57,22 +57,23 @@ void StreamPlayer::Play(string const& streamUrl,
 	{
         {
             unique_lock<mutex> lock1(streamMutex_);
-            streamPtr_ = make_unique<Stream>(streamUrl,
+            stream_ = make_unique<Stream>(streamUrl,
 				connectionTimeoutInMilliseconds, transport, flags);
         }
 
-		streamPtr_->WaitForOpen();
+		stream_->WaitForOpen();
 
 		stopRequested_ = false;
 		bool firstFrame = true;
 
-		framePtr_.reset();
+		frame_.reset();
 		
 		for (;;)
 		{
-            unique_ptr<Frame> framePtr = streamPtr_->GetNextFrame();
+            unique_ptr<Frame> frame = stream_->GetNextFrame();
+			double timestamp = 0.0;
 
-			if (stopRequested_ || framePtr == nullptr)
+			if (stopRequested_ || frame == nullptr)
 			{
                 if (playerParams_.window != nullptr)
                 { 
@@ -83,8 +84,10 @@ void StreamPlayer::Play(string const& streamUrl,
 			}
             else
             {
+				timestamp = frame->Timestamp();
+
                 unique_lock<mutex> lock1(frameMutex_);
-                framePtr_.swap(framePtr);
+                frame_.swap(frame);
             }
 
             if (playerParams_.window != nullptr)
@@ -103,12 +106,12 @@ void StreamPlayer::Play(string const& streamUrl,
 			}
 
             boost::this_thread::sleep_for(
-                boost::chrono::milliseconds(streamPtr_->InterframeDelayInMilliseconds()));
+                boost::chrono::milliseconds(stream_->GetInterframeDelayInMilliseconds(timestamp)));
 		}
 
         {
             unique_lock<mutex> lock1(streamMutex_);
-            streamPtr_.reset();
+            stream_.reset();
         }
 	}
 	catch (runtime_error& e)
@@ -131,9 +134,9 @@ void StreamPlayer::Stop()
 
     {
         unique_lock<mutex> lock(streamMutex_);
-        if (streamPtr_ != nullptr)
+        if (stream_ != nullptr)
         {
-            streamPtr_->Stop();
+            stream_->Stop();
         }
     }
 
@@ -161,8 +164,8 @@ void StreamPlayer::DrawFrame()
 {
     unique_lock<mutex> lock(frameMutex_);
 
-    if (framePtr_ != nullptr)
-        framePtr_->Draw(playerParams_.window);
+    if (frame_ != nullptr)
+        frame_->Draw(playerParams_.window);
 }
 
 LRESULT APIENTRY StreamPlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -206,10 +209,10 @@ void StreamPlayer::GetCurrentFrame(uint8_t **bmpPtr)
 {
     unique_lock<mutex> lock(frameMutex_);
 
-    if (framePtr_ == nullptr)
+    if (frame_ == nullptr)
         throw runtime_error("no frame");
 
-    framePtr_->ToBmp(bmpPtr);
+    frame_->ToBmp(bmpPtr);
 }
 
 void StreamPlayer::GetFrameSize(uint32_t *widthPtr, uint32_t *heightPtr)
@@ -223,13 +226,13 @@ void StreamPlayer::GetFrameSize(uint32_t *widthPtr, uint32_t *heightPtr)
 
     unique_lock<mutex> lock(frameMutex_);
 
-    if (framePtr_ == nullptr)
+    if (frame_ == nullptr)
     {
         throw runtime_error("no frame");
     }
 
-    *widthPtr = framePtr_->Width();
-    *heightPtr = framePtr_->Height();
+    *widthPtr = frame_->Width();
+    *heightPtr = frame_->Height();
 }
 
 void StreamPlayer::RaiseStreamStartedEvent()

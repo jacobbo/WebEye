@@ -136,10 +136,10 @@ namespace FFmpeg
             StreamPlayerParams playerParams_;
 
             boost::mutex streamMutex_;
-            std::unique_ptr<Stream> streamPtr_;
+            std::unique_ptr<Stream> stream_;
 
             boost::mutex frameMutex_;
-            std::unique_ptr<Frame> framePtr_;
+            std::unique_ptr<Frame> frame_;
 
             // There is a bug in the Visual Studio std::thread implementation,
             // which prohibits dll unloading, that is why the boost::thread is used instead.

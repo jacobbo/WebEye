@@ -15,7 +15,8 @@ Stream::Stream(string const& streamUrl,
 	int32_t connectionTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags)
     : url_(streamUrl), connectionTimeout_(connectionTimeoutInMilliseconds),
 	transport_(transport), flags_(flags), openedOrFailed_(false),
-	stopRequested_(false), videoStreamIndex_(-1)
+	stopRequested_(false), videoStreamIndex_(-1), videoClock_(0.0), videoTimer_(0.0),
+	lastFrameTimestamp_(0.0), lastFrameDelay_(0.0)
 {
 }
 
@@ -114,43 +115,45 @@ void Stream::Open()
         avformat_network_init();
     });
 
-	unique_ptr<AVFormatContext, std::function<void(AVFormatContext*)>>
-		formatCtx(avformat_alloc_context(), [](AVFormatContext* ptr)
-	{
-		avformat_close_input(&ptr);
-		avformat_free_context(ptr);
-	});
+	AVFormatContext *formatContextPtr = avformat_alloc_context();
 
-	formatCtx->interrupt_callback.callback = InterruptCallback;
-	formatCtx->interrupt_callback.opaque = this;
-	formatCtx->flags |= AVFMT_FLAG_NONBLOCK;
+	formatContextPtr->interrupt_callback.callback = InterruptCallback;
+	formatContextPtr->interrupt_callback.opaque = this;
+	formatContextPtr->flags |= AVFMT_FLAG_NONBLOCK;
 
     connectionStart_ = std::chrono::system_clock::now();
 
 	auto options = GetOptions(transport_, flags_);
 	auto optionsPtr = options.release();
-    
-	auto formatCtxPtr = formatCtx.get();
-    int error = avformat_open_input(&formatCtxPtr, url_.c_str(), nullptr, &optionsPtr);
+
+    int error = avformat_open_input(&formatContextPtr, url_.c_str(), nullptr, &optionsPtr);
 	options.reset(optionsPtr);
     if (error != 0)
     {
+		avformat_free_context(formatContextPtr);
         throw runtime_error("avformat_open_input() failed: " + AvStrError(error));
     }
 
-    error = avformat_find_stream_info(formatCtx.get(), nullptr);
+	unique_ptr<AVFormatContext, std::function<void(AVFormatContext*)>>
+		formatContext(formatContextPtr, [](AVFormatContext* ptr)
+	{
+		avformat_close_input(&ptr);
+		avformat_free_context(ptr);
+	});
+
+    error = avformat_find_stream_info(formatContext.get(), nullptr);
     if (error < 0)
     {
         throw runtime_error("avformat_find_stream_info() failed: " + AvStrError(error));
     }
 
 	AVStream *videoStreamPtr = nullptr;
-    for (uint32_t i = 0; i < formatCtx->nb_streams; i++)
+    for (uint32_t i = 0; i < formatContext->nb_streams; i++)
     {
-        if (formatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+        if (formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
         {
             videoStreamIndex_ = i;
-			videoStreamPtr = formatCtx->streams[i];
+			videoStreamPtr = formatContext->streams[i];
             break;
         }
     }
@@ -167,12 +170,12 @@ void Stream::Open()
     }
 
 	unique_ptr<AVCodecContext, std::function<void(AVCodecContext*)>>
-		codecCtx(avcodec_alloc_context3(codecPtr), [](AVCodecContext* ptr)
+		codecContext(avcodec_alloc_context3(codecPtr), [](AVCodecContext* ptr)
 	{
 		avcodec_free_context(&ptr);
 	});
 
-	error = avcodec_parameters_to_context(codecCtx.get(), videoStreamPtr->codecpar);
+	error = avcodec_parameters_to_context(codecContext.get(), videoStreamPtr->codecpar);
 	if (error < 0)
 	{
 		throw runtime_error("avcodec_parameters_to_context() failed: " + AvStrError(error));
@@ -181,15 +184,18 @@ void Stream::Open()
 	options = GetOptions(transport_, flags_);
 	optionsPtr = options.release();
 
-    error = avcodec_open2(codecCtx.get(), codecPtr, &optionsPtr);
+    error = avcodec_open2(codecContext.get(), codecPtr, &optionsPtr);
 	options.reset(optionsPtr);
     if (error < 0)
     {
         throw runtime_error("avcodec_open2() failed: " + AvStrError(error));
     }
 
-	formatContext_.swap(formatCtx);
-	codecContext_.swap(codecCtx);
+	videoTimer_ = static_cast<double>(av_gettime() / 1000000.0);
+	lastFrameDelay_ = 40e-3;
+
+	formatContext_.swap(formatContext);
+	codecContext_.swap(codecContext);
 }
 
 void Stream::Read()
@@ -252,6 +258,33 @@ bool FFmpeg::Facade::Stream::IsOpen() const
 	return formatContext_ != nullptr && codecContext_ != nullptr && videoStreamIndex_ > -1;
 }
 
+double Stream::GetTimestamp(AVFrame *avframePtr, const AVRational& timeBase)
+{
+	double timestamp = 0.0;
+	if (avframePtr->pkt_dts != AV_NOPTS_VALUE)
+	{
+		timestamp = avframePtr->best_effort_timestamp * av_q2d(timeBase);
+	}
+
+	if (timestamp != 0.0)
+	{
+		/* if we have pts, set video clock to it */
+		videoClock_ = timestamp;
+	}
+	else
+	{
+		/* if we aren't given a pts, set it to the clock */
+		timestamp = videoClock_;
+	}
+	/* update the video clock */
+	double frameDelay = av_q2d(timeBase);
+	/* if we are repeating a frame, adjust clock accordingly */
+	frameDelay += avframePtr->repeat_pict * (frameDelay * 0.5);
+	videoClock_ += frameDelay;
+
+	return timestamp;
+}
+
 unique_ptr<Frame> Stream::CreateFrame(AVFrame *avframePtr)
 {
 	AVPixelFormat pixelFormat = AV_PIX_FMT_BGR24;
@@ -290,8 +323,11 @@ unique_ptr<Frame> Stream::CreateFrame(AVFrame *avframePtr)
 		avframePtr->linesize, 0, codecContext_->height,
 		avRgbFramePtr->data, avRgbFramePtr->linesize);
 
+	double timestamp = GetTimestamp(avframePtr, 
+		formatContext_->streams[videoStreamIndex_]->time_base);
+
 	unique_ptr<Frame> framePtr = make_unique<Frame>(codecContext_->width,
-		codecContext_->height, *avRgbFramePtr);
+		codecContext_->height, timestamp, *avRgbFramePtr);
 
 	return framePtr;
 }
@@ -348,10 +384,33 @@ unique_ptr<Frame> Stream::GetNextFrame()
     return framePtr;
 }
 
-int32_t Stream::InterframeDelayInMilliseconds() const
+int32_t Stream::GetInterframeDelayInMilliseconds(double frameTimestamp)
 {
-    return codecContext_->ticks_per_frame * 1000 *
-        codecContext_->time_base.num / codecContext_->time_base.den;
+	//double actual_delay;
+	double delay = frameTimestamp - lastFrameTimestamp_; /* the pts from last time */
+	if (delay <= 0 || delay >= 1.0)
+	{
+		/* if incorrect delay, use previous one */
+		delay = lastFrameDelay_;
+	}
+
+	/* save for next time */
+	lastFrameDelay_ = delay;
+	lastFrameTimestamp_ = frameTimestamp;
+
+	videoTimer_ += delay;
+	/* computer the REAL delay */
+	double actual_delay = videoTimer_ - (av_gettime() / 1000000.0);
+	if (actual_delay < 0.01)
+	{
+		/* Really it should skip the picture instead */
+		actual_delay = 0.01;
+	}
+
+	return static_cast<int32_t>(actual_delay * 1000 + 0.5);
+
+    //return codecContext_->ticks_per_frame * 1000 *
+    //    codecContext_->time_base.num / codecContext_->time_base.den;
 }
 
 string Stream::AvStrError(int errnum)

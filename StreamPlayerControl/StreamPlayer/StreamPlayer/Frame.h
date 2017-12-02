@@ -33,9 +33,10 @@ namespace FFmpeg
             /// Initializes a new instance of the Frame class.
             /// </summary>
             /// <param name="width">The width of the frame, in pixels.</param>
-            /// <param name="height">The height of the frame, in pixels.</param>            
+            /// <param name="height">The height of the frame, in pixels.</param> 
+			/// <param name="timestamp">The presentation time stamp of the frame.</param> 
             /// <param name="avFrame">The AVFrame object to initialize the frame with.</param>
-            Frame(uint32_t width, uint32_t height, AVFrame &avFrame);
+            Frame(uint32_t width, uint32_t height, double timestamp, AVFrame &avFrame);
 
             /// <summary>
             /// Gets the width of the frame, in pixels.
@@ -46,6 +47,11 @@ namespace FFmpeg
             /// Gets the height of the frame, in pixels.
             /// </summary>
             uint32_t Height() const { return height_; }
+
+			/// <summary>
+			/// Gets the presentation time stamp of the frame.
+			/// </summary>
+			double Timestamp() const { return timestamp_; }
 
             /// <summary>
             /// Draws the frame.
@@ -77,8 +83,9 @@ namespace FFmpeg
                 return lineSize % sizeof(uint32_t) > 0 ?
                     sizeof(uint32_t) - (lineSize % sizeof(uint32_t)) : 0;
             }
-
+			
             int32_t width_, height_;
+			double timestamp_;
             uint8_t *pixelsPtr_;
         };
     }

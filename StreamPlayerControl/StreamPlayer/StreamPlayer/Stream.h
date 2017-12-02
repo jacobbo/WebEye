@@ -31,13 +31,14 @@ namespace FFmpeg
 #include <libavdevice/avdevice.h>
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
+#include <libavutil/time.h>
 	}
 
 #pragma warning( pop )
 
 	// The FFmpeg framework built using the following configuration:
-	// x64: ./configure --toolchain=msvc --arch=amd64 --target-os=win64 --enable-version3 --enable-static --disable-shared --disable-programs --disable-doc
-    // x86: ./configure --toolchain=msvc --arch=i386 --enable-version3 --enable-static --disable-shared --disable-programs --disable-doc 
+	// x64: ./configure --toolchain=msvc --arch=amd64 --target-os=win64 --enable-gpl --enable-version3 --enable-static --disable-shared --disable-programs --disable-doc
+    // x86: ./configure --toolchain=msvc --arch=i386 --enable-gpl --enable-version3 --enable-static --disable-shared --disable-programs --disable-doc 
 
 #pragma comment(lib, "libavformat.a")
 #pragma comment(lib, "libavcodec.a")
@@ -89,7 +90,7 @@ namespace FFmpeg
 			/// <summary>
 			/// Gets an interframe delay, in milliseconds.
 			/// </summary>
-			int32_t InterframeDelayInMilliseconds() const;
+			int32_t GetInterframeDelayInMilliseconds(double frameTimestamp);
 
 			/// <summary>
 			/// Stops the stream.
@@ -105,6 +106,8 @@ namespace FFmpeg
             void OpenAndRead();
 
 			bool IsOpen() const;
+
+			double GetTimestamp(AVFrame *avframePtr, const AVRational& timeBase);
 
 			std::unique_ptr<Frame> CreateFrame(AVFrame *avframePtr);
 
@@ -122,6 +125,11 @@ namespace FFmpeg
 			bool openedOrFailed_;
 			boost::atomic<bool> stopRequested_;
 			int32_t videoStreamIndex_;
+
+			double videoClock_; ///<pts of last decoded frame / predicted pts of next decoded frame
+			double videoTimer_;			
+			double lastFrameTimestamp_;
+			double lastFrameDelay_;			
 
 			std::unique_ptr<AVFormatContext, std::function<void(AVFormatContext*)>> formatContext_;
 			std::unique_ptr<AVCodecContext, std::function<void(AVCodecContext*)>> codecContext_;			
