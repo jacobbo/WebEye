@@ -15,6 +15,7 @@
 #pragma warning( pop )
 
 #include <boost/atomic.hpp>
+#include <boost/thread/barrier.hpp>
 
 #include "ConcurrentQueue.h"
 
@@ -73,8 +74,9 @@ namespace FFmpeg
             /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
 			/// <param name="transport">RTSP transport protocol.</param>
 			/// <param name="flags">RTSP flags.</param>
+			/// <param name="frameTimeoutInMilliseconds">The frame timeout in milliseconds.</param>
             Stream(std::string const& streamUrl,  int32_t connectionTimeoutInMilliseconds,
-				RtspTransport transport, RtspFlags flags);
+				int32_t frameTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags);
 
 			/// <summary>
 			/// Blocks the current thread until the stream gets opened or fails to open.
@@ -118,15 +120,21 @@ namespace FFmpeg
 
 			static std::string AvStrError(int errnum);
 
+			static bool IsTimedOut(std::chrono::time_point<std::chrono::system_clock> start,
+				std::chrono::milliseconds timeout);
+
 			std::string url_;
             std::chrono::milliseconds connectionTimeout_;
+            std::chrono::milliseconds frameTimeout_;
 			RtspTransport transport_;
-			RtspFlags flags_;
-			bool openedOrFailed_;
-			boost::atomic<bool> stopRequested_;
-			int32_t videoStreamIndex_;
+			RtspFlags flags_;			
+            std::chrono::time_point<std::chrono::system_clock> connectionStart_;
+			std::chrono::time_point<std::chrono::system_clock> frameStart_;
+            boost::barrier barrier_;
+            boost::atomic<bool> stopRequested_;
+            int32_t videoStreamIndex_;
 
-			double videoClock_; ///<pts of last decoded frame / predicted pts of next decoded frame
+			double videoClock_; // pts of last decoded frame / predicted pts of next decoded frame
 			double videoTimer_;			
 			double lastFrameTimestamp_;
 			double lastFrameDelay_;			
@@ -137,11 +145,8 @@ namespace FFmpeg
 			            
             std::string error_;			
             boost::thread workerThread_;
-            boost::mutex mutex_;
-            boost::condition_variable conditionVariable_;
-
-            ConcurrentQueue<AVPacket *> packetQueue_;
-            std::chrono::time_point<std::chrono::system_clock> connectionStart_;            
+            
+            ConcurrentQueue<AVPacket *> packetQueue_;            			
 		};
 	}
 }

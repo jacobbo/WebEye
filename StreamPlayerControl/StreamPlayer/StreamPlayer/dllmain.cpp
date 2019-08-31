@@ -23,12 +23,12 @@ STREAMPLAYER_API int32_t __stdcall Initialize(FFmpeg::Facade::StreamPlayerParams
 }
 
 STREAMPLAYER_API int32_t __stdcall StartPlay(const char* url,
-	uint32_t connectionTimeoutInMilliseconds, FFmpeg::Facade::RtspTransport transport,
-	FFmpeg::Facade::RtspFlags flags)
+	int32_t connectionTimeoutInMilliseconds, int32_t streamTimeoutInMilliseconds,
+	FFmpeg::Facade::RtspTransport transport, FFmpeg::Facade::RtspFlags flags)
 {
     try
     {
-        player.StartPlay(url, connectionTimeoutInMilliseconds, transport, flags);
+        player.StartPlay(url, connectionTimeoutInMilliseconds, streamTimeoutInMilliseconds, transport, flags);
     }
     catch (std::runtime_error &)
     {

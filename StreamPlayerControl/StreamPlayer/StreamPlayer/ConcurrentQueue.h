@@ -9,6 +9,7 @@
 #pragma warning( disable : 4100 )
 
 #include <boost/thread.hpp>
+#include <boost/atomic.hpp>
 
 #pragma warning( pop )
 
@@ -68,8 +69,10 @@ namespace FFmpeg
                 queueNotEmpty_.wait(lock,
                     [this] { return !queue_.empty() || stopRequested_; });
 
-                if (stopRequested_)
-                    return false;
+				if (stopRequested_)
+				{
+					return false;
+				}
 
                 value = queue_.front();
                 queue_.pop();
@@ -82,16 +85,20 @@ namespace FFmpeg
             /// </summary>
             void StopWait()
             {
-                {
-                    boost::unique_lock<boost::mutex> lock(mutex_);
-                    stopRequested_ = true;
-                }
-                
+                stopRequested_ = true;
                 queueNotEmpty_.notify_all();
             }
 
+			/// <summary>
+			/// Returns the number of elements in the ConcurrentQueue. 
+			/// </summary>
+			size_t Size() const
+			{
+				return queue_.size();
+			}
+
         private:
-            bool stopRequested_;
+			boost::atomic<bool> stopRequested_;
             std::queue<T> queue_;
             mutable boost::mutex mutex_;            
             boost::condition_variable queueNotEmpty_;

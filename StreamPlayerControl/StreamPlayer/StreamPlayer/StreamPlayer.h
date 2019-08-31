@@ -12,8 +12,6 @@
 
 #pragma warning( pop )
 
-#include <boost/atomic.hpp>
-
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
@@ -69,10 +67,11 @@ namespace FFmpeg
             /// </summary>
             /// <param name="streamUrl">The url of a stream to play.</param>
             /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
+			/// <param name="streamTimeoutInMilliseconds">The stream timeout in milliseconds.</param>
 			/// <param name="transport">RTSP transport protocol.</param>
-			/// <param name="transport">RTSP flags.</param>
-            void StartPlay(std::string const& streamUrl,
-                uint32_t connectionTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags);
+			/// <param name="flags">RTSP flags.</param>
+			void StartPlay(std::string const& streamUrl, int32_t connectionTimeoutInMilliseconds,
+				int32_t streamTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags);
 
             /// <summary>
             /// Stops a stream.
@@ -103,10 +102,11 @@ namespace FFmpeg
 			/// </summary>
 			/// <param name="streamUrl">The url of a stream to play.</param>
             /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
+			/// <param name="streamTimeoutInMilliseconds">The stream timeout in milliseconds.</param>
 			/// <param name="transport">RTSP transport protocol.</param>
-			/// <param name="transport">RTSP flags.</param>
-            void Play(std::string const& streamUrl,
-                int32_t connectionTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags);
+			/// <param name="transport">RTSP flags.</param>			
+            void Play(std::string const& streamUrl, int32_t connectionTimeoutInMilliseconds,
+			    int32_t streamTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags);
 
 			/// <summary>
 			/// Draws a frame.
@@ -132,7 +132,6 @@ namespace FFmpeg
 
         private:
 			            
-            boost::atomic<bool> stopRequested_;
             StreamPlayerParams playerParams_;
 
             boost::mutex streamMutex_;

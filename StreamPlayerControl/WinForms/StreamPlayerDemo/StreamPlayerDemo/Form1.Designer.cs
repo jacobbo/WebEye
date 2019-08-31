@@ -57,7 +57,7 @@
             this._urlTextBox.Name = "_urlTextBox";
             this._urlTextBox.Size = new System.Drawing.Size(466, 26);
             this._urlTextBox.TabIndex = 1;
-            this._urlTextBox.Text = "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov";
+            this._urlTextBox.Text = "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov";
             // 
             // _playButton
             // 

@@ -40,14 +40,16 @@ namespace WebEye.Controls.WinForms.StreamPlayerControl
         /// </summary>
         /// <param name="url">The url of a stream to play.</param>
         /// <param name="connectionTimeout">The connection timeout.</param>
-        /// <exception cref="StreamPlayerException">Failed to play the stream.</exception>
+        /// <param name="streamTimeout">The stream timeout.</param>
         /// <param name="transport">RTSP transport protocol.</param>
         /// <param name="flags">RTSP flags.</param>
+        /// <exception cref="StreamPlayerException">Failed to play the stream.</exception>
         internal void StartPlay(String url, TimeSpan connectionTimeout,
-            RtspTransport transport, RtspFlags flags)
+            TimeSpan streamTimeout, RtspTransport transport, RtspFlags flags)
         {
             if (_startPlayDelegate(url,
                 Convert.ToInt32(connectionTimeout.TotalMilliseconds),
+                Convert.ToInt32(streamTimeout.TotalMilliseconds),
                 Convert.ToInt32(transport),
                 Convert.ToInt32(flags)) != 0)
             {
@@ -233,7 +235,7 @@ namespace WebEye.Controls.WinForms.StreamPlayerControl
         private InitializeDelegate _initialize;
 
         private delegate Int32 StartPlayDelegate([MarshalAs(UnmanagedType.LPStr)]String url,
-            Int32 connectionTimeout, Int32 transport, Int32 flags);
+            Int32 connectionTimeout, Int32 streamTimeout, Int32 transport, Int32 flags);
         private StartPlayDelegate _startPlayDelegate;
 
         private delegate Int32 GetCurrentFrameDelegate([Out] out IntPtr dibPtr);

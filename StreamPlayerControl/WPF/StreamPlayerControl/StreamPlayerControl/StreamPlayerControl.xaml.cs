@@ -55,7 +55,7 @@ namespace WebEye.Controls.Wpf.StreamPlayerControl
         /// <exception cref="StreamPlayerException">Failed to play the stream.</exception> 
         public void StartPlay(Uri uri)
         {
-            StartPlay(uri, TimeSpan.FromSeconds(5.0), RtspTransport.Undefined, RtspFlags.None);
+            StartPlay(uri, TimeSpan.FromSeconds(5.0), TimeSpan.FromSeconds(5.0), RtspTransport.Undefined, RtspFlags.None);
         }
 
         /// <summary>
@@ -66,10 +66,11 @@ namespace WebEye.Controls.Wpf.StreamPlayerControl
         /// <exception cref="Win32Exception">Failed to load the FFmpeg facade dll.</exception>
         /// <exception cref="StreamPlayerException">Failed to play the stream.</exception>
         /// <param name="connectionTimeout">The connection timeout.</param>
+        /// <param name="streamTimeout">The stream timeout.</param>
         /// <param name="transport">RTSP transport protocol.</param>
-        /// <param name="flags">RTSP flags.</param>
+        /// <param name="flags">RTSP flags.</param>        
         public void StartPlay(Uri uri, TimeSpan connectionTimeout,
-            RtspTransport transport, RtspFlags flags)
+            TimeSpan streamTimeout, RtspTransport transport, RtspFlags flags)
         {
             if (IsPlaying)
             {
@@ -77,7 +78,7 @@ namespace WebEye.Controls.Wpf.StreamPlayerControl
             }
 
             Player.StartPlay(uri.IsFile ? uri.LocalPath : uri.ToString(),
-                connectionTimeout, transport, flags);
+                connectionTimeout, streamTimeout, transport, flags);
         }
 
         /// <summary>

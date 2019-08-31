@@ -1,8 +1,6 @@
 #include "stream.h"
 #include <stdexcept>
 
-#include <boost/lexical_cast.hpp>
-
 #include "frame.h"
 #include "StreamPlayer.h"
 
@@ -11,12 +9,14 @@ using namespace boost;
 using namespace FFmpeg;
 using namespace FFmpeg::Facade;
 
-Stream::Stream(string const& streamUrl,
-	int32_t connectionTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags)
+Stream::Stream(string const& streamUrl,	int32_t connectionTimeoutInMilliseconds,
+	int32_t frameTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags)
     : url_(streamUrl), connectionTimeout_(connectionTimeoutInMilliseconds),
-	transport_(transport), flags_(flags), openedOrFailed_(false),
-	stopRequested_(false), videoStreamIndex_(-1), videoClock_(0.0), videoTimer_(0.0),
-	lastFrameTimestamp_(0.0), lastFrameDelay_(0.0)
+    frameTimeout_(frameTimeoutInMilliseconds), transport_(transport), flags_(flags),
+    connectionStart_((std::chrono::time_point<std::chrono::system_clock>::max)()),
+    frameStart_((std::chrono::time_point<std::chrono::system_clock>::max)()),
+	barrier_(2), stopRequested_(false), videoStreamIndex_(-1),	
+	videoClock_(0.0), videoTimer_(0.0),	lastFrameTimestamp_(0.0), lastFrameDelay_(0.0)
 {
 }
 
@@ -24,8 +24,7 @@ void FFmpeg::Facade::Stream::WaitForOpen()
 {
 	workerThread_ = thread(&Stream::OpenAndRead, this);
 
-	boost::unique_lock<mutex> lock(mutex_);
-	conditionVariable_.wait(lock, [this] { return openedOrFailed_; });
+    barrier_.wait();
 
 	if (!IsOpen())
 	{
@@ -35,30 +34,39 @@ void FFmpeg::Facade::Stream::WaitForOpen()
 
 int Stream::InterruptCallback(void *ctx)
 {
-    Stream* streamPtr = reinterpret_cast<Stream*>(ctx);
-    
+    Stream* streamPtr = reinterpret_cast<Stream*>(ctx);    
     if (streamPtr == nullptr)
     {
         return 0;
     }
 
-    {
-        boost::lock_guard<boost::mutex> lock(streamPtr->mutex_);
-        if (streamPtr->openedOrFailed_)
-        {
-            return 0;
-        }
-    }
+	if (!streamPtr->IsOpen())
+	{
+		if (IsTimedOut(streamPtr->connectionStart_, streamPtr->connectionTimeout_))
+		{
+			return 1;
+		}
+	}
 
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now() - streamPtr->connectionStart_);
-    
-    if (elapsed > streamPtr->connectionTimeout_)
-    {
-        return 1;
-    }
+	if (streamPtr->stopRequested_)
+	{
+		return 1;
+	}
+
+	if (IsTimedOut(streamPtr->frameStart_, streamPtr->frameTimeout_))
+	{
+		return 1;
+	}
 
     return 0;
+}
+
+bool Stream::IsTimedOut(std::chrono::time_point<std::chrono::system_clock> start,
+	std::chrono::milliseconds timeout)
+{
+	auto now = std::chrono::system_clock::now();
+	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+	return elapsed > timeout;
 }
 
 unique_ptr<AVDictionary, std::function<void(AVDictionary*)>> Stream::GetOptions(RtspTransport transport,
@@ -200,14 +208,24 @@ void Stream::Open()
 
 void Stream::Read()
 {
-    while (!stopRequested_)
+	const int32_t maxPacketQueueSize = 256;
+	const int32_t readerSleepTimeInMilliseconds = 10;
+
+	for (;;)
     {
+		if (packetQueue_.Size() >= maxPacketQueueSize)
+		{
+			boost::this_thread::sleep_for(boost::chrono::milliseconds(readerSleepTimeInMilliseconds));
+			continue;
+		}
+
 		unique_ptr<AVPacket, std::function<void(AVPacket*)>>
 			packetPtr(av_packet_alloc(), [](AVPacket* ptr)
 		{
 			av_packet_free(&ptr);
 		});
 
+		frameStart_ = std::chrono::system_clock::now();
         int error = av_read_frame(formatContext_.get(), packetPtr.get());
         if (error < 0)
         {
@@ -240,12 +258,7 @@ void Stream::OpenAndRead()
         error_ = e.what();
     }
 
-    {
-        boost::lock_guard<boost::mutex> lock(mutex_);
-        openedOrFailed_ = true;
-    }
-
-    conditionVariable_.notify_one();
+    barrier_.wait();
 
     if (IsOpen())
     {
@@ -336,7 +349,7 @@ unique_ptr<Frame> Stream::GetNextFrame()
 {
     unique_ptr<Frame> framePtr;    
 
-    while (!stopRequested_)
+	for (;;)
     {
         AVPacket *rawPtr = nullptr;
         if (!packetQueue_.WaitAndPop(rawPtr))
@@ -408,9 +421,6 @@ int32_t Stream::GetInterframeDelayInMilliseconds(double frameTimestamp)
 	}
 
 	return static_cast<int32_t>(actual_delay * 1000 + 0.5);
-
-    //return codecContext_->ticks_per_frame * 1000 *
-    //    codecContext_->time_base.num / codecContext_->time_base.den;
 }
 
 string Stream::AvStrError(int errnum)

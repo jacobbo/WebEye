@@ -13,8 +13,7 @@ using namespace FFmpeg::Facade;
 
 WNDPROC StreamPlayer::originalWndProc_ = nullptr;
 
-StreamPlayer::StreamPlayer()
-	: stopRequested_(false) {}
+StreamPlayer::StreamPlayer() {}
 
 void StreamPlayer::Initialize(StreamPlayerParams params)
 {
@@ -36,15 +35,15 @@ void StreamPlayer::Initialize(StreamPlayerParams params)
         reinterpret_cast<LONG_PTR>(WndProc)));
 }
 
-void StreamPlayer::StartPlay(string const& streamUrl,
-    uint32_t connectionTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags)
+void StreamPlayer::StartPlay(string const& streamUrl, int32_t connectionTimeoutInMilliseconds,
+	int32_t streamTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags)
 {
-	workerThread_ = boost::thread(&StreamPlayer::Play, this,
-        streamUrl, connectionTimeoutInMilliseconds, transport, flags);
+	workerThread_ = boost::thread(&StreamPlayer::Play, this, streamUrl,
+		connectionTimeoutInMilliseconds, streamTimeoutInMilliseconds, transport, flags);
 }
 
-void StreamPlayer::Play(string const& streamUrl,
-    int32_t connectionTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags)
+void StreamPlayer::Play(string const& streamUrl, int32_t connectionTimeoutInMilliseconds,
+    int32_t streamTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags)
 {
     boost::unique_lock<boost::mutex> lock(workerThreadMutex_, boost::defer_lock);
 	if (!lock.try_lock())
@@ -58,14 +57,12 @@ void StreamPlayer::Play(string const& streamUrl,
         {
             unique_lock<mutex> lock1(streamMutex_);
             stream_ = make_unique<Stream>(streamUrl,
-				connectionTimeoutInMilliseconds, transport, flags);
+				connectionTimeoutInMilliseconds, streamTimeoutInMilliseconds, transport, flags);
         }
 
 		stream_->WaitForOpen();
 
-		stopRequested_ = false;
 		bool firstFrame = true;
-
 		frame_.reset();
 		
 		for (;;)
@@ -73,7 +70,7 @@ void StreamPlayer::Play(string const& streamUrl,
             unique_ptr<Frame> frame = stream_->GetNextFrame();
 			double timestamp = 0.0;
 
-			if (stopRequested_ || frame == nullptr)
+			if (frame == nullptr)
 			{
                 if (playerParams_.window != nullptr)
                 { 
@@ -130,8 +127,6 @@ void StreamPlayer::Play(string const& streamUrl,
 
 void StreamPlayer::Stop()
 {
-    stopRequested_ = true;
-
     {
         unique_lock<mutex> lock(streamMutex_);
         if (stream_ != nullptr)
