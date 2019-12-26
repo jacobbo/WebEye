@@ -17,7 +17,7 @@ namespace WebEye.StreamControl.Wpf
         {
             InitializeComponent();
         }
-                
+
         private static void HandleStreamChanged(DependencyObject d,
             DependencyPropertyChangedEventArgs e)
         {
@@ -68,7 +68,33 @@ namespace WebEye.StreamControl.Wpf
         {
             get { return (Stream)GetValue(StreamProperty); }
             set { SetValue(StreamProperty, value); }
-        }        
+        }
+
+        public static readonly DependencyProperty PreserveStreamAspectRatioProperty =
+    DependencyProperty.Register("PreserveStreamAspectRatio", typeof(bool), typeof(StreamControl),
+new FrameworkPropertyMetadata(false, HandlePreserveStreamAspectRatioChanged));
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to preserve the aspect ratio of a stream.
+        /// </summary>
+        public bool PreserveStreamAspectRatio
+        {
+            get { return (bool)GetValue(PreserveStreamAspectRatioProperty); }
+            set { SetValue(PreserveStreamAspectRatioProperty, value); }
+        }
+
+        private static void HandlePreserveStreamAspectRatioChanged(DependencyObject d,
+            DependencyPropertyChangedEventArgs e)
+        {
+            var control = d as StreamControl;
+            if (control == null)
+            {
+                return;
+            }
+
+            control._image.Stretch = (bool)e.NewValue ?
+                System.Windows.Media.Stretch.Uniform : System.Windows.Media.Stretch.Fill;
+        }
 
         protected override void OnContentChanged(object oldContent, object newContent)
         {
