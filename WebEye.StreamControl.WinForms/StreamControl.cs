@@ -3,6 +3,7 @@ using System.Windows.Forms;
 
 namespace WebEye.StreamControl.WinForms
 {
+    using System;
     using System.Threading;
 
     /// <summary>
@@ -17,6 +18,11 @@ namespace WebEye.StreamControl.WinForms
         {
             InitializeComponent();
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to preserve the aspect ratio of a stream.
+        /// </summary>
+        public Boolean PreserveStreamAspectRatio { get; set; }
 
         private SynchronizationContext _uiContext = SynchronizationContext.Current;
 
@@ -52,7 +58,9 @@ namespace WebEye.StreamControl.WinForms
             _uiContext.Post(o =>
             {
                 _currentFrame?.Dispose();
-                _currentFrame = e.Frame;                
+                _currentFrame = e.Frame;
+
+                Invalidate();
             }, null);
         }
 
@@ -62,7 +70,21 @@ namespace WebEye.StreamControl.WinForms
 
             if (_currentFrame != null)
             {
-                e.Graphics.DrawImage(_currentFrame, 0, 0);
+                if (PreserveStreamAspectRatio)
+                {
+                    float scale = Math.Min(e.ClipRectangle.Width / (float)_currentFrame.Width,
+                        e.ClipRectangle.Height / (float)_currentFrame.Height);
+
+                    var scaleWidth = (int)(_currentFrame.Width * scale);
+                    var scaleHeight = (int)(_currentFrame.Height * scale);
+
+                    e.Graphics.DrawImage(_currentFrame, ((int)e.ClipRectangle.Width - scaleWidth) / 2,
+                        ((int)e.ClipRectangle.Height - scaleHeight) / 2, scaleWidth, scaleHeight);
+                }
+                else
+                {
+                    e.Graphics.DrawImage(_currentFrame, e.ClipRectangle);
+                }
             }            
         }
 

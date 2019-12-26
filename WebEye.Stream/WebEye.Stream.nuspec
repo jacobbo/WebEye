@@ -1,19 +1,21 @@
 <?xml version="1.0"?>
 <package >
-  <metadata>
+  <metadata minClientVersion="2.5">
     <id>WebEye.Stream</id>
-    <version>1.0.0</version>
-    <authors>Alexander Iacobciuc</authors>
-    <owners>WebEye</owners>
+    <version>1.0.2</version>
+    <authors>WebEye</authors>
+    <owners>Alexander Iacobciuc</owners>
     <licenseUrl>http://www.codeproject.com/info/cpol10.aspx</licenseUrl>
-    <projectUrl>https://github.com/jacobbo/WebEye/tree/master/StreamPlayerControl</projectUrl>
-    <iconUrl>https://raw.githubusercontent.com/jacobbo/WebEye/master/StreamPlayerControl/Icon.png</iconUrl>
+    <projectUrl>https://github.com/jacobbo/WebEye</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/jacobbo/WebEye/master/Icon.png</iconUrl>
     <description>The WebEye.Stream is a FFmpeg-based frame grabber, a simple and easy to use one, no additional dependencies and a minimalistic interface.</description>
     <copyright>Copyright © WebEye 2019</copyright>
     <tags>streaming rtsp camera webeye FFmpeg webcam frame grabber</tags>
   </metadata>
   <files>
-      <file src="bin\Release\WebEye.Controls.WinForms.StreamPlayerControl.dll" target="lib\net20\" />
-	  <file src="bin\Release\WebEye.Controls.WinForms.StreamPlayerControl.pdb" target="lib\net20\" />
+      <file src="build\**" target="build" />
+	  <file src="WebEye.Stream.*.dll" target="resources" />
+      <file src="bin\Release\WebEye.Stream.dll" target="lib\net40\" />
+	  <file src="bin\Release\WebEye.Stream.pdb" target="lib\net40\" />
   </files>  
 </package>

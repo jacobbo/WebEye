@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>WebEye.StreamControl.WinForms</id>
+    <version>1.0.2</version>
+    <authors>WebEye</authors>
+    <owners>Alexander Iacobciuc</owners>
+    <licenseUrl>http://www.codeproject.com/info/cpol10.aspx</licenseUrl>
+    <projectUrl>https://github.com/jacobbo/WebEye</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/jacobbo/WebEye/master/Icon.png</iconUrl>
+    <description>The StreamControl is a FFmpeg-based stream player control, a simple and easy to use one, no additional dependencies and a minimalistic interface.</description>
+    <copyright>Copyright © WebEye 2019</copyright>
+    <tags>winforms streaming rtsp camera webeye FFmpeg</tags>
+	    <dependencies>
+            <dependency id="WebEye.Stream" version="1.0.2" />
+        </dependencies>
+  </metadata>
+  <files>
+      <file src="bin\Release\WebEye.StreamControl.WinForms.dll" target="lib\net40\" />
+	  <file src="bin\Release\WebEye.StreamControl.WinForms.pdb" target="lib\net40\" />
+  </files>  
+</package>

@@ -84,8 +84,8 @@ namespace WebEye
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
                 Environment.Is64BitProcess ? "WebEye.Stream.x64.dll" : "WebEye.Stream.Win32.dll");
             var name = AssemblyName.GetAssemblyName(path);
-            return Assembly.Load(name).GetType("WebEye.ManagedWrapper");
-        }
+            return Assembly.Load(name).GetType("WebEye.ManagedWrapper");            
+        }       
 
         /// <summary>
         /// Retrieves local streams, each represents a video input device connected to the system.
@@ -107,7 +107,6 @@ namespace WebEye
             var disposable = _proxy as IDisposable;
             disposable?.Dispose();
         }
-
 
         public string Name
         {

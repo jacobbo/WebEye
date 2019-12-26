@@ -1,0 +1,125 @@
+﻿<Window x:Class="WebEye.StreamControl.Wpf.Demo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:webEye="clr-namespace:WebEye.StreamControl.Wpf;assembly=WebEye.StreamControl.Wpf"
+        xmlns:local="clr-namespace:WebEye.StreamControl.Wpf.Demo"
+        Title="MainWindow" Height="480" Width="640"
+        >
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type local:LocalStreamViewModel}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30*"/>
+                    <ColumnDefinition Width="18*"/>
+                    <ColumnDefinition Width="10*"/>
+                    <ColumnDefinition Width="10*"/>
+                    <ColumnDefinition Width="10*"/>
+                    <ColumnDefinition Width="22*"/>
+                </Grid.ColumnDefinitions>
+
+                    <webEye:StreamControl Grid.ColumnSpan="6" Stream="{Binding Stream}" 
+                                          PreserveStreamAspectRatio="{Binding PreserveAspectRatio}"/>
+
+                <TextBlock Grid.ColumnSpan="6" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+<Run FontStyle="Italic" FontFamily="Georgia" Foreground="Red">Rich</Run>
+<Run FontSize="30" FontFamily="Comic Sans MS" Foreground="Blue"> Text </Run>
+<Run FontFamily="Arial Black" Foreground="Orange" FontSize="100">in</Run>
+<Run FontFamily="Courier New" FontWeight="Bold" Foreground="Green"> a </Run>
+<Run FontFamily="Verdana" TextDecorations="Underline">TextBlock</Run>
+                </TextBlock>
+
+                <ComboBox Grid.Row="1" DisplayMemberPath="Name"
+                          SelectedItem="{Binding Stream}" ItemsSource="{Binding LocalStreams}" />
+
+                <CheckBox Grid.Row="1" Grid.Column="1" Content="Aspect Ratio"
+                          IsChecked="{Binding PreserveAspectRatio}"  VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                
+                <Button Grid.Row="1" Grid.Column="2" Content="Play" Command="{Binding StartStreamCommand}"/>
+                <Button Grid.Row="1" Grid.Column="3" Content="Stop" Command="{Binding StopStreamCommand}"/>
+                <Button Grid.Row="1" Grid.Column="4" Content="Image..." Command="{Binding SaveFrameCommand}"/>
+
+                <TextBox Grid.Row="1" Grid.Column="5" IsEnabled="False" TextAlignment="Center"
+                         Text="{Binding Status}" ToolTip="{Binding Status}"/>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:UriStreamViewModel}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="32*"/>
+                    <ColumnDefinition Width="18*"/>
+                    <ColumnDefinition Width="10*"/>
+                    <ColumnDefinition Width="10*"/>
+                    <ColumnDefinition Width="10*"/>
+                    <ColumnDefinition Width="20*"/>
+                </Grid.ColumnDefinitions>
+
+  
+                <webEye:StreamControl Grid.ColumnSpan="6" Stream="{Binding Stream}"
+                                      PreserveStreamAspectRatio="{Binding PreserveAspectRatio}"/>
+                <TextBlock Grid.ColumnSpan="6" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+<Run FontStyle="Italic" FontFamily="Georgia" Foreground="Red">Rich</Run>
+<Run FontSize="30" FontFamily="Comic Sans MS" Foreground="Blue"> Text </Run>
+<Run FontFamily="Arial Black" Foreground="Orange" FontSize="100">in</Run>
+<Run FontFamily="Courier New" FontWeight="Bold" Foreground="Green"> a </Run>
+<Run FontFamily="Verdana" TextDecorations="Underline">TextBlock</Run>
+                </TextBlock>             
+                
+                <TextBox Grid.Row="1" Text="{Binding Uri}" ToolTip="{Binding Uri}" />
+
+                <CheckBox Grid.Row="1" Grid.Column="1" Content="Aspect Ratio"
+                          IsChecked="{Binding PreserveAspectRatio}"  VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                <Button Grid.Row="1" Grid.Column="2" Content="Play" Command="{Binding StartStreamCommand}"/>
+                <Button Grid.Row="1" Grid.Column="3" Content="Stop" Command="{Binding StopStreamCommand}"/>
+                <Button Grid.Row="1" Grid.Column="4" Content="Image..." Command="{Binding SaveFrameCommand}"/>
+
+                <TextBox Grid.Row="1" Grid.Column="5" IsEnabled="False" TextAlignment="Center"
+                         Text="{Binding Status}" ToolTip="{Binding Status}"/>
+            </Grid>
+        </DataTemplate>
+    </Window.Resources>
+    
+    <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Button Content="Add Local Stream" Command="{Binding AddLocalStreamCommand}"/>
+        <Button Content="Add Remote Stream" Grid.Column="1" Command="{Binding AddUriStreamCommand}"/>
+        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2">
+            <ItemsControl   ItemsSource="{Binding Streams}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ContentPresenter Content="{Binding}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+
+                <ItemsControl.ItemContainerStyle>
+                    <Style>
+                        <Setter Property="Control.HorizontalAlignment" Value="Stretch"/>
+                        <Setter Property="Control.Height" Value="300"/>
+                        <Setter Property="Control.Margin" Value="5"/>
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</Window>
