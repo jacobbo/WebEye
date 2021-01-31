@@ -59,7 +59,7 @@ void Player::Play(string const& streamUrl, int32_t connectionTimeoutInMillisecon
 			if (frame == nullptr)
 			{
 				RaiseStreamStoppedEvent();
-				break;
+				//break;
 			}
             else
             {
@@ -88,6 +88,24 @@ void Player::Play(string const& streamUrl, int32_t connectionTimeoutInMillisecon
         }
 
 		RaiseStreamFailedEvent();
+    }
+}
+
+void Player::Pause()
+{
+    boost::unique_lock<boost::mutex> lock(streamMutex_);
+    if (stream_ != nullptr)
+    {
+        stream_->Pause();
+    }
+}
+
+void Player::Resume()
+{
+    boost::unique_lock<boost::mutex> lock(streamMutex_);
+    if (stream_ != nullptr)
+    {
+        stream_->Resume();
     }
 }
 

@@ -4,74 +4,81 @@
 
 namespace WebEye
 {
-	public delegate void FrameRecievedHandler(System::Drawing::Bitmap^ bmp);
-	public delegate void StreamFailedHandler(System::String^ error);
-	public delegate void StreamStoppedHandler();
+    public delegate void FrameRecievedHandler(System::Drawing::Bitmap^ bmp);
+    public delegate void StreamFailedHandler(System::String^ error);
+    public delegate void StreamStoppedHandler();
 
-	//delegate void EnumDevicesHandler(const Device::DeviceInfo* devicePtr,
-	//	std::vector<std::wstring> *namesPtr);
-	delegate void FramePtrRecievedHandler(uint8_t *bmpPtr);
-	delegate void StreamErrorHandler(const char* error);
+    delegate void FramePtrRecievedHandler(uint8_t *bmpPtr);
+    delegate void StreamErrorHandler(const char* error);
 
-	//public enum class RtspTransport { Undefined = 0, Udp = 1, Tcp = 2, UdpMulticast = 3, Http = 4 };
+    public ref class ManagedWrapper sealed
+    {
+    public:
+        static ManagedWrapper^ FromUri(System::Uri^ uri, System::TimeSpan^ connectionTimeout,
+            System::TimeSpan^ streamTimeout, WebEye::RtspTransport transport, WebEye::RtspFlags flags);
 
-	//public enum class RtspFlags { None = 0, FilterSrc = 1, Listen = 2, PreferTcp = 3 };
+        static System::Collections::Generic::IEnumerable<ManagedWrapper^>^ GetLocalStreams();
 
-	public ref class ManagedWrapper sealed
-	{
-	public:
-		static ManagedWrapper^ FromUri(System::Uri^ uri, System::TimeSpan^ connectionTimeout,
-			System::TimeSpan^ streamTimeout, WebEye::RtspTransport transport, WebEye::RtspFlags flags);
+        property System::String^ Name { System::String^ get(); }
 
-		static System::Collections::Generic::IEnumerable<ManagedWrapper^>^ GetLocalStreams();
+        /// <summary>
+        /// Asynchronously plays a stream.
+        /// </summary>
+        void Start();
 
-		property System::String^ Name { System::String^ get(); }
+        /// <summary>
+        /// Pauses a network-based stream.
+        /// </summary>
+        void Pause();
 
-		void Start();
-		void Stop();
+        /// <summary>
+        /// Resumes a network-based stream.
+        /// </summary>
+        void Resume();
 
-		event FrameRecievedHandler^ FrameRecieved;
-		event StreamFailedHandler^ StreamFailed;
-		event StreamStoppedHandler^ StreamStopped;
+        /// <summary>
+        /// Stops a stream.
+        /// </summary>
+        void Stop();
 
-		~ManagedWrapper();
+        event FrameRecievedHandler^ FrameRecieved;
+        event StreamFailedHandler^ StreamFailed;
+        event StreamStoppedHandler^ StreamStopped;
 
-	private:
-		ManagedWrapper();
+        ~ManagedWrapper();
 
-		ManagedWrapper(System::String^ deviceName);
+    private:
+        ManagedWrapper();
 
-		ManagedWrapper(System::Uri^ uri, System::TimeSpan^ connectionTimeout,
-			System::TimeSpan^ streamTimeout, WebEye::RtspTransport transport, WebEye::RtspFlags flags);
+        ManagedWrapper(System::String^ deviceName);
 
-		void RaiseFrameRecievedEvent(uint8_t *bmpPtr);
+        ManagedWrapper(System::Uri^ uri, System::TimeSpan^ connectionTimeout,
+            System::TimeSpan^ streamTimeout, WebEye::RtspTransport transport, WebEye::RtspFlags flags);
 
-		void RaiseStreamFailedEvent(const char* error);
+        void RaiseFrameRecievedEvent(uint8_t *bmpPtr);
 
-		void RaiseStreamStoppedEvent();
+        void RaiseStreamFailedEvent(const char* error);
 
-		System::Drawing::Bitmap^ ToBitmap(uint8_t *bmpPtr);
+        void RaiseStreamStoppedEvent();
 
-		//static void SaveDevice(const Device::DeviceInfo *infoPtr,
-		//	std::vector<std::wstring> *namesPtr);
+        System::Drawing::Bitmap^ ToBitmap(uint8_t *bmpPtr);
 
-		FFmpeg::Facade::Player *playerPtr_;
+        FFmpeg::Facade::Player *playerPtr_;
 
-		FrameRecievedHandler^ frameRecievedHandler_;
-		StreamFailedHandler^ streamFailedHandler_;
-		StreamStoppedHandler^ streamStoppedHandler_;
-		
+        FrameRecievedHandler^ frameRecievedHandler_;
+        StreamFailedHandler^ streamFailedHandler_;
+        StreamStoppedHandler^ streamStoppedHandler_;
 
-		System::Runtime::InteropServices::GCHandle frameRecievedHandle_;
-		System::Runtime::InteropServices::GCHandle streamErrorHandle_;
-		System::Runtime::InteropServices::GCHandle streamStoppedHandle_;		
+        System::Runtime::InteropServices::GCHandle frameRecievedHandle_;
+        System::Runtime::InteropServices::GCHandle streamErrorHandle_;
+        System::Runtime::InteropServices::GCHandle streamStoppedHandle_;
 
-		System::String^ url_;
-		int connectionTimeout_;
-		int streamTimeout_;
-		RtspTransport transport_;
-		RtspFlags flags_;
+        System::String^ url_;
+        int connectionTimeout_;
+        int streamTimeout_;
+        RtspTransport transport_;
+        RtspFlags flags_;
 
-		System::String^ deviceName_;
-	};
+        System::String^ deviceName_;
+    };
 }

@@ -108,6 +108,16 @@ void ManagedWrapper::Start()
 	}
 }
 
+void ManagedWrapper::Pause()
+{
+    playerPtr_->Pause();
+}
+
+void ManagedWrapper::Resume()
+{
+    playerPtr_->Resume();
+}
+
 void ManagedWrapper::Stop()
 {
 	playerPtr_->Stop();

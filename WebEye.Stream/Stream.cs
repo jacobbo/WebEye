@@ -125,6 +125,22 @@ namespace WebEye
         }
 
         /// <summary>
+        /// Pauses a network-based stream.
+        /// </summary>
+        public void Pause()
+        {
+            _proxy.GetType().GetMethod("Pause").Invoke(_proxy, null);
+        }
+
+        /// <summary>
+        /// Resumes a network-based stream.
+        /// </summary>
+        public void Resume()
+        {
+            _proxy.GetType().GetMethod("Resume").Invoke(_proxy, null);
+        }
+
+        /// <summary>
         /// Stops a stream.
         /// </summary>
         public void Stop()

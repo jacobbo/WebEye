@@ -13,18 +13,20 @@ namespace WebEye.StreamControl.Wpf.Demo
             StartStreamCommand = new RelayCommand(p => Stream.Start(),
                 p => Stream != null);
 
-            StopStreamCommand = new RelayCommand(p => Stream.Stop(),
+            StopStreamCommand = new RelayCommand(p => Stream.Pause(),
                 p => Stream != null);
 
-            SaveFrameCommand = new RelayCommand(p =>
-            {
-                var dialog = new SaveFileDialog { Filter = "Bitmap Image|*.bmp" };
-                if (dialog.ShowDialog() == true)
-                {
-                    _currentFrame.Save(dialog.FileName);
-                }
-            },
-                p => _currentFrame != null);
+            SaveFrameCommand = new RelayCommand(p => Stream.Resume(),
+                p => Stream != null);
+
+            //SaveFrameCommand = new RelayCommand(p =>
+            //{
+            //    var dialog = new SaveFileDialog { Filter = "Bitmap Image|*.bmp" };
+            //    if (dialog.ShowDialog() == true)
+            //    {
+            //        _currentFrame.Save(dialog.FileName);
+            //    }
+            //}, p => _currentFrame != null);
         }
 
         private Stream _stream;

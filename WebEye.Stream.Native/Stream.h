@@ -14,27 +14,27 @@
 
 namespace WebEye
 {
-	namespace FFmpeg
-	{
+    namespace FFmpeg
+    {
 
 #pragma warning( push )
 #pragma warning( disable : 4244 )
 
-		extern "C"
-		{
+        extern "C"
+        {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #include <libavdevice/avdevice.h>
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
 #include <libavutil/time.h>
-		}
+        }
 
 #pragma warning( pop )
 
-		// The FFmpeg framework built using the following configuration:
-		// x64: ./configure --toolchain=msvc --arch=amd64 --target-os=win64 --enable-gpl --enable-version3 --enable-static --disable-shared --disable-programs --disable-doc
-		// x86: ./configure --toolchain=msvc --arch=i386 --enable-gpl --enable-version3 --enable-static --disable-shared --disable-programs --disable-doc 
+        // The FFmpeg framework built using the following configuration:
+        // x64: ./configure --toolchain=msvc --arch=amd64 --target-os=win64 --enable-gpl --enable-version3 --enable-static --disable-shared --disable-programs --disable-doc
+        // x86: ./configure --toolchain=msvc --arch=i386 --enable-gpl --enable-version3 --enable-static --disable-shared --disable-programs --disable-doc 
 
 #pragma comment(lib, "libavformat.a")
 #pragma comment(lib, "libavcodec.a")
@@ -51,104 +51,116 @@ namespace WebEye
 #pragma comment(lib, "Secur32.lib")
 #pragma comment(lib, "Bcrypt.lib")
 
-		namespace Facade
-		{
-			enum RtspTransport : int32_t;
-			enum RtspFlags : int32_t;
-			class Frame;
+        namespace Facade
+        {
+            enum RtspTransport : int32_t;
+            enum RtspFlags : int32_t;
+            class Frame;
 
-			/// <summary>
-			/// A Stream class converts a stream into a set of frames. 
-			/// </summary>
-			class Stream
-			{
-			public:
-				Stream(const Stream&) = delete;
-				Stream& operator=(const Stream&) = delete;
+            /// <summary>
+            /// A Stream class converts a stream into a set of frames. 
+            /// </summary>
+            class Stream
+            {
+            public:
+                Stream(const Stream&) = delete;
+                Stream& operator=(const Stream&) = delete;
 
-				/// <summary>
-				/// Initializes a new instance of the Stream class.
-				/// </summary>
-				/// <param name="streamUrl">The url of a stream to decode.</param>
-				/// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
-				/// <param name="transport">RTSP transport protocol.</param>
-				/// <param name="flags">RTSP flags.</param>
-				/// <param name="frameTimeoutInMilliseconds">The frame timeout in milliseconds.</param>
-				Stream(std::string const& streamUrl, int32_t connectionTimeoutInMilliseconds,
-					int32_t frameTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags);
+                /// <summary>
+                /// Initializes a new instance of the Stream class.
+                /// </summary>
+                /// <param name="streamUrl">The url of a stream to decode.</param>
+                /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
+                /// <param name="transport">RTSP transport protocol.</param>
+                /// <param name="flags">RTSP flags.</param>
+                /// <param name="frameTimeoutInMilliseconds">The frame timeout in milliseconds.</param>
+                Stream(std::string const& streamUrl, int32_t connectionTimeoutInMilliseconds,
+                    int32_t frameTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags);
 
-				/// <summary>
-				/// Blocks the current thread until the stream gets opened or fails to open.
-				/// </summary>
-				void WaitForOpen();
+                /// <summary>
+                /// Blocks the current thread until the stream gets opened or fails to open.
+                /// </summary>
+                void WaitForOpen();
 
-				/// <summary>
-				/// Gets the next frame in the stream.
-				/// </summary>
-				/// <returns>The next frame in the stream or nullptr if there are no more frames.</returns>
-				std::unique_ptr<Frame> GetNextFrame();
+                /// <summary>
+                /// Gets the next frame in the stream.
+                /// </summary>
+                /// <returns>The next frame in the stream or nullptr if there are no more frames.</returns>
+                std::unique_ptr<Frame> GetNextFrame();
 
-				/// <summary>
-				/// Gets an interframe delay, in milliseconds.
-				/// </summary>
-				int32_t GetInterframeDelayInMilliseconds(double frameTimestamp);
+                /// <summary>
+                /// Gets an interframe delay, in milliseconds.
+                /// </summary>
+                int32_t GetInterframeDelayInMilliseconds(double frameTimestamp);
 
-				/// <summary>
-				/// Stops the stream.
-				/// </summary>
-				void Stop();
+                /// <summary>
+                /// Pauses a network-based stream.
+                /// </summary>
+                void Pause();
 
-			private:
+                /// <summary>
+                /// Resumes a network-based stream.
+                /// </summary>
+                void Resume();
 
-				void Open();
+                /// <summary>
+                /// Stops the stream.
+                /// </summary>
+                void Stop();
 
-				void Read();
+            private:
 
-				void OpenAndRead();
+                void Open();
 
-				bool IsOpen() const;
+                void Read();
 
-				double GetTimestamp(AVFrame *avframePtr, const AVRational& timeBase);
+                void OpenAndRead();
 
-				std::unique_ptr<Frame> CreateFrame(AVFrame *avframePtr);
+                bool IsOpen() const;
 
-				std::unique_ptr<AVDictionary, std::function<void(AVDictionary*)>> GetOptions(RtspTransport transport,
-					RtspFlags flags);
+                double GetTimestamp(AVFrame *avframePtr, const AVRational& timeBase);
 
-				static int InterruptCallback(void *ctx);
+                std::unique_ptr<Frame> CreateFrame(AVFrame *avframePtr);
 
-				static std::string AvStrError(int errnum);
+                std::unique_ptr<AVDictionary, std::function<void(AVDictionary*)>> GetOptions(RtspTransport transport,
+                    RtspFlags flags);
 
-				static bool IsTimedOut(boost::chrono::time_point<boost::chrono::system_clock> start,
-					boost::chrono::milliseconds timeout);
+                static int InterruptCallback(void *ctx);
 
-				std::string url_;
-				boost::chrono::milliseconds connectionTimeout_;
-				boost::chrono::milliseconds frameTimeout_;
-				RtspTransport transport_;
-				RtspFlags flags_;
-				boost::chrono::time_point<boost::chrono::system_clock> connectionStart_;
-				boost::chrono::time_point<boost::chrono::system_clock> frameStart_;
-				boost::barrier barrier_;
-				std::atomic<bool> stopRequested_;
-				int32_t videoStreamIndex_;
+                static std::string AvStrError(int errnum);
 
-				double videoClock_; // pts of last decoded frame / predicted pts of next decoded frame
-				double videoTimer_;
-				double lastFrameTimestamp_;
-				double lastFrameDelay_;
+                static bool IsTimedOut(boost::chrono::time_point<boost::chrono::system_clock> start,
+                    boost::chrono::milliseconds timeout);
 
-				std::unique_ptr<AVFormatContext, std::function<void(AVFormatContext*)>> formatContext_;
-				std::unique_ptr<AVCodecContext, std::function<void(AVCodecContext*)>> codecContext_;
-				std::unique_ptr<SwsContext, std::function<void(SwsContext*)>> imageConvertContext_;
+                std::string url_;
+                boost::chrono::milliseconds connectionTimeout_;
+                boost::chrono::milliseconds frameTimeout_;
+                RtspTransport transport_;
+                RtspFlags flags_;
+                boost::chrono::time_point<boost::chrono::system_clock> connectionStart_;
+                boost::chrono::time_point<boost::chrono::system_clock> frameStart_;
+                boost::barrier barrier_;
+                std::atomic<bool> stopRequested_;
+                std::atomic<bool> pauseRequested_;
+                std::atomic<bool> resumeRequested_;
+                int32_t videoStreamIndex_;
 
-				std::string error_;
-				boost::thread workerThread_;
+                double videoClock_; // pts of last decoded frame / predicted pts of next decoded frame
+                double videoTimer_;
+                double lastFrameTimestamp_;
+                double lastFrameDelay_;
 
-				ConcurrentQueue<AVPacket *> packetQueue_;
-			};
-		}
-	}
+                std::unique_ptr<AVFormatContext, std::function<void(AVFormatContext*)>> formatContext_;
+                std::unique_ptr<AVCodecContext, std::function<void(AVCodecContext*)>> codecContext_;
+                std::unique_ptr<SwsContext, std::function<void(SwsContext*)>> imageConvertContext_;
+
+                std::string error_;
+                boost::thread workerThread_;
+
+                ConcurrentQueue<AVPacket *> packetQueue_;
+            };
+        }
+    }
 }
 
 #endif // WEBEYE_FFMPEG_FACADE_STREAM_H

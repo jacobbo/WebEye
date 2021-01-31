@@ -2,14 +2,14 @@
 <package >
   <metadata minClientVersion="2.5">
     <id>WebEye.Stream</id>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <authors>WebEye</authors>
     <owners>Alexander Iacobciuc</owners>
     <licenseUrl>http://www.codeproject.com/info/cpol10.aspx</licenseUrl>
     <projectUrl>https://github.com/jacobbo/WebEye</projectUrl>
     <iconUrl>https://raw.githubusercontent.com/jacobbo/WebEye/master/Icon.png</iconUrl>
     <description>The WebEye.Stream is a FFmpeg-based frame grabber, a simple and easy to use one, no additional dependencies and a minimalistic interface.</description>
-    <copyright>Copyright © WebEye 2019</copyright>
+    <copyright>Copyright © WebEye 2020</copyright>
     <tags>streaming rtsp camera webeye FFmpeg webcam frame grabber</tags>
   </metadata>
   <files>

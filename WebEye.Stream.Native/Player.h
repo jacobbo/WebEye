@@ -15,113 +15,123 @@
 
 namespace WebEye
 {
-	namespace FFmpeg
-	{
-		namespace Facade
-		{
-			class Stream;
+    namespace FFmpeg
+    {
+        namespace Facade
+        {
+            class Stream;
 
-			typedef void(__stdcall *StreamStoppedCallback)();
-			typedef void(__stdcall *StreamFailedCallback)(const char* error);
-			typedef void(__stdcall *FrameRecievedCallback)(uint8_t *bmpPtr);
+            typedef void(__stdcall *StreamStoppedCallback)();
+            typedef void(__stdcall *StreamFailedCallback)(const char* error);
+            typedef void(__stdcall *FrameRecievedCallback)(uint8_t *bmpPtr);
 
-			struct PlayerParams
-			{
-				PlayerParams() : streamStoppedCallback(nullptr), streamFailedCallback(nullptr),
-					frameRecievedCallback(nullptr) {}
+            struct PlayerParams
+            {
+                PlayerParams() : streamStoppedCallback(nullptr), streamFailedCallback(nullptr),
+                    frameRecievedCallback(nullptr) {}
 
-				StreamStoppedCallback streamStoppedCallback;
-				StreamFailedCallback streamFailedCallback;
-				FrameRecievedCallback frameRecievedCallback;
-			};
+                StreamStoppedCallback streamStoppedCallback;
+                StreamFailedCallback streamFailedCallback;
+                FrameRecievedCallback frameRecievedCallback;
+            };
 
-			enum RtspTransport : int32_t { Undefined = 0, Udp = 1, Tcp = 2, UdpMulticast = 3, Http = 4 };
+            enum RtspTransport : int32_t { Undefined = 0, Udp = 1, Tcp = 2, UdpMulticast = 3, Http = 4 };
 
-			enum RtspFlags : int32_t { None = 0, FilterSrc = 1, Listen = 2, PreferTcp = 3 };
+            enum RtspFlags : int32_t { None = 0, FilterSrc = 1, Listen = 2, PreferTcp = 3 };
 
-			/// <summary>
-			/// A Player class implements a stream playback functionality.
-			/// </summary>
-			class Player
-			{
-			public:
-				Player(const Player&) = delete;
-				Player& operator=(const Player&) = delete;
+            /// <summary>
+            /// A Player class implements a stream playback functionality.
+            /// </summary>
+            class Player
+            {
+            public:
+                Player(const Player&) = delete;
+                Player& operator=(const Player&) = delete;
 
-				Player() {}
+                Player() {}
 
-				/// <summary>
-				/// Initializes the player.
-				/// </summary>
-				/// <param name="playerParams">The PlayerParams object that contains the information that is used to initialize the player.</param>
-				void Initialize(PlayerParams playerParams);
+                /// <summary>
+                /// Initializes the player.
+                /// </summary>
+                /// <param name="playerParams">The PlayerParams object that contains the information that is used to initialize the player.</param>
+                void Initialize(PlayerParams playerParams);
 
-				/// <summary>
-				/// Asynchronously plays a stream.
-				/// </summary>
-				/// <param name="streamUrl">The url of a stream to play.</param>
-				/// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
-				/// <param name="streamTimeoutInMilliseconds">The stream timeout in milliseconds.</param>
-				/// <param name="transport">RTSP transport protocol.</param>
-				/// <param name="flags">RTSP flags.</param>
-				void StartPlay(std::string const& streamUrl, int32_t connectionTimeoutInMilliseconds,
-					int32_t streamTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags);
+                /// <summary>
+                /// Asynchronously plays a stream.
+                /// </summary>
+                /// <param name="streamUrl">The url of a stream to play.</param>
+                /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
+                /// <param name="streamTimeoutInMilliseconds">The stream timeout in milliseconds.</param>
+                /// <param name="transport">RTSP transport protocol.</param>
+                /// <param name="flags">RTSP flags.</param>
+                void StartPlay(std::string const& streamUrl, int32_t connectionTimeoutInMilliseconds,
+                    int32_t streamTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags);
 
-				/// <summary>
-				/// Stops a stream.
-				/// </summary>
-				void Stop();
+                /// <summary>
+                /// Pauses a network-based stream.
+                /// </summary>
+                void Pause();
 
-				/// <summary>
-				/// Uninitializes the player.
-				/// </summary>
-				void Uninitialize();
+                /// <summary>
+                /// Resumes a network-based stream.
+                /// </summary>
+                void Resume();
 
-			private:
-				/// <summary>
-				/// Plays a stream.
-				/// </summary>
-				/// <param name="streamUrl">The url of a stream to play.</param>
-				/// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
-				/// <param name="streamTimeoutInMilliseconds">The stream timeout in milliseconds.</param>
-				/// <param name="transport">RTSP transport protocol.</param>
-				/// <param name="transport">RTSP flags.</param>			
-				void Play(std::string const& streamUrl, int32_t connectionTimeoutInMilliseconds,
-					int32_t streamTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags);
+                /// <summary>
+                /// Stops a stream.
+                /// </summary>
+                void Stop();
 
-				/// <summary>
-				/// Raises the StreamStopped event.
-				/// </summary>
-				void RaiseStreamStoppedEvent();
+                /// <summary>
+                /// Uninitializes the player.
+                /// </summary>
+                void Uninitialize();
 
-				/// <summary>
-				/// Raises the StreamFailed event.
-				/// </summary>
-				void RaiseStreamFailedEvent();
+            private:
+                /// <summary>
+                /// Plays a stream.
+                /// </summary>
+                /// <param name="streamUrl">The url of a stream to play.</param>
+                /// <param name="connectionTimeoutInMilliseconds">The connection timeout in milliseconds.</param>
+                /// <param name="streamTimeoutInMilliseconds">The stream timeout in milliseconds.</param>
+                /// <param name="transport">RTSP transport protocol.</param>
+                /// <param name="transport">RTSP flags.</param>			
+                void Play(std::string const& streamUrl, int32_t connectionTimeoutInMilliseconds,
+                    int32_t streamTimeoutInMilliseconds, RtspTransport transport, RtspFlags flags);
 
-				/// <summary>
-				/// Raises the FrameReceived event.
-				/// </summary>
-				void RaiseFrameReceivedEvent();
+                /// <summary>
+                /// Raises the StreamStopped event.
+                /// </summary>
+                void RaiseStreamStoppedEvent();
 
-			private:
+                /// <summary>
+                /// Raises the StreamFailed event.
+                /// </summary>
+                void RaiseStreamFailedEvent();
 
-				PlayerParams playerParams_;
+                /// <summary>
+                /// Raises the FrameReceived event.
+                /// </summary>
+                void RaiseFrameReceivedEvent();
 
-				boost::mutex streamMutex_;
-				std::unique_ptr<Stream> stream_;
+            private:
 
-				boost::mutex frameMutex_;
-				std::unique_ptr<Frame> frame_;
+                PlayerParams playerParams_;
 
-				boost::mutex workerThreadMutex_;
-				boost::thread workerThread_;
+                boost::mutex streamMutex_;
+                std::unique_ptr<Stream> stream_;
 
-				boost::mutex errorMutex_;
-				std::string error_;
-			};
-		}
-	}
+                boost::mutex frameMutex_;
+                std::unique_ptr<Frame> frame_;
+
+                boost::mutex workerThreadMutex_;
+                boost::thread workerThread_;
+
+                boost::mutex errorMutex_;
+                std::string error_;
+            };
+        }
+    }
 }
 
 #endif // WEBEYE_FFMPEG_FACADE_PLAYER_H

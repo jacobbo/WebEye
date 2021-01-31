@@ -239,6 +239,18 @@ void Stream::Read()
 
 	while (!stopRequested_)
     {
+        if (pauseRequested_)
+        {
+            av_read_pause(formatContext_.get());
+            pauseRequested_ = false;
+        }
+
+        if (resumeRequested_)
+        {
+            av_read_play(formatContext_.get());
+            resumeRequested_ = false;
+        }
+
 		if (packetQueue_.Size() >= maxPacketQueueSize)
 		{
 			boost::this_thread::sleep_for(boost::chrono::milliseconds(readerSleepTimeInMilliseconds));
@@ -257,12 +269,18 @@ void Stream::Read()
 		{
 			continue;
 		}
+        else if (error == AVERROR_EOF)
+        {
+            continue;
+        }
 		else if (error < 0)
         {
             //if (error != static_cast<int>(AVERROR_EOF))
             //{
             //    throw runtime_error("av_read_frame() failed: " + AvStrError(error));
             //}	
+
+            auto s = AvStrError(error);
 
             packetQueue_.Push(nullptr);
 
@@ -458,6 +476,16 @@ string Stream::AvStrError(int errnum)
     char buf[128];
     av_strerror(errnum, buf, sizeof(buf));
     return string(buf);
+}
+
+void Stream::Pause()
+{
+    pauseRequested_ = true;
+}
+
+void Stream::Resume()
+{
+    resumeRequested_ = true;
 }
 
 void Stream::Stop()

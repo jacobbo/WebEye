@@ -2,17 +2,17 @@
 <package >
   <metadata>
     <id>WebEye.StreamControl.Wpf</id>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <authors>WebEye</authors>
     <owners>Alexander Iacobciuc</owners>
     <licenseUrl>http://www.codeproject.com/info/cpol10.aspx</licenseUrl>
     <projectUrl>https://github.com/jacobbo/WebEye</projectUrl>
     <iconUrl>https://raw.githubusercontent.com/jacobbo/WebEye/master/Icon.png</iconUrl>
     <description>The StreamControl is a FFmpeg-based stream player control, a simple and easy to use one, no additional dependencies and a minimalistic interface.</description>
-    <copyright>Copyright © WebEye 2019</copyright>
+    <copyright>Copyright © WebEye 2020</copyright>
     <tags>wpf streaming rtsp camera webeye FFmpeg</tags>
 		<dependencies>
-            <dependency id="WebEye.Stream" version="1.0.2" />
+            <dependency id="WebEye.Stream" version="1.0.3" />
         </dependencies>
   </metadata>
   <files>
